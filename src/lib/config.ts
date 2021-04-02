@@ -17,10 +17,8 @@ export class Config {
     if (process.env.GITHUB_APP_PRIVATE_KEY) {
       if (fs.existsSync(process.env.GITHUB_APP_PRIVATE_KEY)) {
         githubPrivateKey = fs.readFileSync(process.env.GITHUB_APP_PRIVATE_KEY).toString();
-      } else if (process.env.GITHUB_APP_PRIVATE_KEY.match('/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/')) {
-        githubPrivateKey = (new Buffer(process.env.GITHUB_APP_PRIVATE_KEY, 'base64')).toString('ascii');
       } else {
-        githubPrivateKey = process.env.GITHUB_APP_PRIVATE_KEY.replace(/ /g, "\n");
+        githubPrivateKey = (new Buffer(process.env.GITHUB_APP_PRIVATE_KEY, 'base64')).toString('ascii');
       }
     }
     this.jira = {
