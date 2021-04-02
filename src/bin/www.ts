@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import http from 'http';
-import Debug from 'debug';
-import app from '../src/app';
+import app from '../app';
 
-const debug = Debug('plugin-site-issues:server');
 
 /**
  * Get port from environment and store in Express.
@@ -83,5 +81,5 @@ function onListening(): void {
   const bind = typeof addr === 'string'
     ? `pipe ${addr}`
     : `port ${addr.port}`;
-  debug(`Listening on ${bind}`);
+  console.log(`Listening on ${bind}`);
 }

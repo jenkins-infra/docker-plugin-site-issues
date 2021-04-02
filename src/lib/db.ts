@@ -1,7 +1,40 @@
+import path from 'path';
+import { readFileSync } from 'fs';
+
 import axios, { Method } from 'axios';
+import { graphql } from '@octokit/graphql';
+import { createAppAuth } from '@octokit/auth-app';
+import { request as githubRequest } from '@octokit/request';
+
 import config from './config';
 
 const quoteStr = (str: string) => `"${str.replace('"', '\\"')}"`;
+
+const GRAPHQL_QUERY_GET_ISSUES = readFileSync(path.join(__dirname, 'getGithubIssues.graphql')).toString();
+
+export type Issue = {
+  readonly key: string;
+
+  readonly issueType: string;
+
+  readonly priority: string;
+
+  readonly status: string;
+
+  readonly resolution: string;
+
+  readonly summary: string;
+
+  readonly assignee: string;
+
+  readonly reporter: string;
+
+  readonly created: string;
+
+  readonly updated: string;
+
+  readonly url: string;
+};
 
 async function getPluginInfo(pluginName: string) {
   const response = await axios.get('https://updates.jenkins.io/update-center.actual.json').then((response) => response.data);
@@ -17,7 +50,7 @@ async function getIssuesForPlugin(pluginName: string) {
   }
 }
 
-async function getJiraIssues(componentId: number, statuses = ['Open', 'In Progress', 'Reopened']): Promise<any> {
+async function getJiraIssues(componentId: number, statuses = ['Open', 'In Progress', 'Reopened']): Promise<Issue[]> {
   const maxResults = 100;
   const startAt = 0;
 
@@ -54,8 +87,46 @@ async function getJiraIssues(componentId: number, statuses = ['Open', 'In Progre
   }));
 }
 
+async function getGithubIssues(reference: string): Promise<Issue[]> {
+  const [owner, repository] = reference.split('/');
+  const issues = [];
+  let hasNextPage = true;
+  let after = null;
+
+  /* TODO CACHE ME */
+  const { data: installations } = await createAppAuth({ appId: config.github.appId, privateKey: config.github.privateKey }).hook(githubRequest, 'GET /app/installations');
+  const graphqlWithAuth = graphql.defaults({
+    request: {
+      hook: createAppAuth({ appId: config.github.appId, privateKey: config.github.privateKey, installationId: installations[0].id }).hook,
+    },
+  });
+
+  while (hasNextPage) {
+    // eslint-disable-next-line no-await-in-loop
+    const data = await graphqlWithAuth(GRAPHQL_QUERY_GET_ISSUES, { cursor: after, owner, name: repository }) as any;
+    issues.push(...data.organization.repository.issues.nodes.map((issue: { key: any; issueTypes: { nodes: { name: string; }[]; }; resolution: any; status: any; summary: any; assignees: { nodes: { name: string; }[]; }; reporter: { login: any; }; createdAt: any; updatedAt: any; url: any; }) => ({
+      key: issue.key,
+      issueType: issue.issueTypes?.nodes.map((n: { name: string }) => n.name).join(', '),
+      priority: '',
+      resolution: issue.resolution,
+      status: issue.status,
+      summary: issue.summary,
+      assignee: issue.assignees.nodes.map((n: { name: string }) => n.name).join(', '),
+      reporter: issue.reporter.login,
+      created: issue.createdAt,
+      updated: issue.updatedAt,
+      url: issue.url,
+    })));
+    hasNextPage = data.organization.repository.issues.pageInfo.hasNextPage;
+    after = data.organization.repository.issues.pageInfo.endCursor;
+  }
+
+  return issues;
+}
+
 export default {
   getPluginInfo,
   getIssuesForPlugin,
   getJiraIssues,
+  getGithubIssues,
 };
