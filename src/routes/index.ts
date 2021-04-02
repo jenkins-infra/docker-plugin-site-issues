@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.get('/healthcheck', (req, res, next) => {
   res.send('OK');
 });
 
-module.exports = router;
+export default router;

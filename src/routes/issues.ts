@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import db from '../lib/db';
 
 const router = express.Router();
-const asyncHandler = require('express-async-handler');
-const db = require('../lib/db');
 
 /* GET issues listing. */
 router.get('/:plugin/open', asyncHandler(async (req, res) => {
@@ -13,12 +13,14 @@ router.get('/:plugin/open', asyncHandler(async (req, res) => {
   }
   const promises = [];
   for (const tracker of pluginTrackers) {
-    if (tracker.type === "jira") {
-      promises.push(db.getJiraIssues(tracker.reference))
+    if (tracker.type === 'jira') {
+      promises.push(db.getJiraIssues(tracker.reference));
       continue;
     }
   }
-  res.json(await Promise.all(promises));
+  res.json({
+    issues: await Promise.all(promises),
+  });
 }));
 
-module.exports = router;
+export default router;
