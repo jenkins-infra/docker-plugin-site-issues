@@ -10,7 +10,7 @@ import config from './config';
 
 const quoteStr = (str: string) => `"${str.replace('"', '\\"')}"`;
 
-const GRAPHQL_QUERY_GET_ISSUES = readFileSync(path.join(__dirname, 'getGithubIssues.graphql')).toString();
+const GRAPHQL_QUERY_GET_ISSUES = readFileSync(path.join(__dirname, '..', '..', 'graphql', 'getGithubIssues.graphql')).toString();
 
 export type Issue = {
   readonly key: string;
