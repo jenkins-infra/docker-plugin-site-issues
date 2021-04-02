@@ -13,6 +13,16 @@ export class Config {
   };
 
   constructor() {
+    let githubPrivateKey = '';
+    if (process.env.GITHUB_APP_PRIVATE_KEY) {
+      if (fs.existsSync(process.env.GITHUB_APP_PRIVATE_KEY)) {
+        githubPrivateKey = fs.readFileSync(process.env.GITHUB_APP_PRIVATE_KEY).toString();
+      } else if (process.env.GITHUB_APP_PRIVATE_KEY.match('/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/')) {
+        githubPrivateKey = (new Buffer(process.env.GITHUB_APP_PRIVATE_KEY, 'base64')).toString('ascii');
+      } else {
+        githubPrivateKey = process.env.GITHUB_APP_PRIVATE_KEY.replace(/ /g, "\n");
+      }
+    }
     this.jira = {
       url: process.env.JIRA_URL || 'https://issues.jenkins.io',
       username: process.env.JIRA_USERNAME || '',
@@ -20,7 +30,7 @@ export class Config {
     };
     this.github = {
       appId: process.env.GITHUB_APP_ID || '',
-      privateKey: (process.env.GITHUB_APP_PRIVATE_KEY && fs.existsSync(process.env.GITHUB_APP_PRIVATE_KEY) ? fs.readFileSync(process.env.GITHUB_APP_PRIVATE_KEY || '').toString() : process.env.GITHUB_APP_PRIVATE_KEY) || '',
+      privateKey: githubPrivateKey
     };
 
     if (!this.jira.username) {
