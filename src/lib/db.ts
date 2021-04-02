@@ -39,7 +39,7 @@ async function getJiraIssues(componentId: number, statuses = ['Open', 'In Progre
   //   jiraIssues.issues.addAll(getIssues(pluginName, startAt + maxResults).issues);
   // }
   const response = await axios(axiosOptions).then((response) => response.data);
-  return response.issues.map((issue: any) => ({
+  return response.issues.map((issue: { key: string; fields: { issuetype?: { name?: string; }; priority?: { name?: string; }; status?: { status?: string; }; resolution: { name?: string; }; summary?: string; assignee?: { displayName?: string; }; reporter?: { displayName?: string; }; created: string; updated: string; }; }) => ({
     key: issue.key,
     issueType: issue?.fields?.issuetype?.name,
     priority: issue?.fields?.priority?.name,
