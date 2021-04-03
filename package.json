@@ -22,9 +22,11 @@
     "cors": "^2.8.5",
     "express": "~4.16.1",
     "express-async-handler": "^1.1.4",
+    "express-prom-bundle": "^6.3.5",
     "express-youch": "^1.0.1",
     "helmet": "^4.4.1",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "prom-client": "^13.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
