@@ -120,7 +120,7 @@ async function getGithubIssuesUncached(reference: string): Promise<Issue[]> {
       },
     ) as any;
     issues.push(...data.organization.repository.issues.nodes.map((issue: { key: any; issueTypes: { nodes: { name: string; }[]; }; resolution: any; status: any; summary: any; assignees: { nodes: { name: string; }[]; }; reporter: { login: any; }; createdAt: any; updatedAt: any; url: any; }) => ({
-      key: issue.key,
+      key: `#${issue.key}`,
       issueType: issue.issueTypes?.nodes.map((n: { name: string }) => n.name).join(', '),
       priority: '',
       resolution: issue.resolution,
