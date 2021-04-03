@@ -23,7 +23,7 @@ router.get('/:plugin/open', asyncHandler(async (req, res): Promise<void> => {
     .then((issues) => issues.flat())
     .then((issues) => issues.sort((a, b) => (Date.parse(b.created) - Date.parse(a.created))
              || (Date.parse(b.updated) - Date.parse(a.updated))));
-  res.json({ sortedIssues });
+  res.json({ issues: sortedIssues });
 }));
 
 export default router;
