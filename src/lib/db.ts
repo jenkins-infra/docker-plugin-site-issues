@@ -5,6 +5,7 @@ import axios, { Method } from 'axios';
 import { graphql } from '@octokit/graphql';
 import { createAppAuth } from '@octokit/auth-app';
 import { request as githubRequest } from '@octokit/request';
+import memoize from 'timed-memoize';
 
 import config from './config';
 
@@ -36,21 +37,18 @@ export type Issue = {
   readonly url: string;
 };
 
-async function getPluginInfo(pluginName: string) {
-  const response = await axios.get('https://updates.jenkins.io/update-center.actual.json').then((response) => response.data);
-  if (response.plugins.hasOwnProperty(pluginName)) {
-    return response.plugins[pluginName];
-  }
-}
+const getIssuesIndex = memoize(() => axios.get('https://reports.jenkins.io/issues.index.json').then((response) => response.data), { timeout: 60 * 60 * 1000 });
 
-async function getIssuesForPlugin(pluginName: string) {
-  const response = await axios.get('https://reports.jenkins.io/issues.index.json').then((response) => response.data);
-  if (response.hasOwnProperty(pluginName)) {
+async function getIssuesForPluginUncached(pluginName: string) {
+  const response = await getIssuesIndex();
+  if (Object.prototype.hasOwnProperty.call(response, pluginName)) {
     return response[pluginName];
   }
+  return null;
 }
+export const getIssuesForPlugin = memoize(getIssuesForPluginUncached, { timeout: 30 * 60 * 1000 });
 
-async function getJiraIssues(componentId: number, statuses = ['Open', 'In Progress', 'Reopened']): Promise<Issue[]> {
+async function getJiraIssuesUncached(componentId: number, statuses = ['Open', 'In Progress', 'Reopened']): Promise<Issue[]> {
   const maxResults = 100;
   const startAt = 0;
 
@@ -86,24 +84,41 @@ async function getJiraIssues(componentId: number, statuses = ['Open', 'In Progre
     url: `${config.jira.url.replace(/\/+$/, '')}/browse/${issue.key}`,
   }));
 }
+export const getJiraIssues = memoize(getJiraIssuesUncached, { timeout: 30 * 60 * 1000 });
 
-async function getGithubIssues(reference: string): Promise<Issue[]> {
+const getGraphqlClient = memoize(async () => {
+  const { data: installations } = await createAppAuth({
+    appId: config.github.appId,
+    privateKey: config.github.privateKey,
+  }).hook(githubRequest, 'GET /app/installations');
+  const graphqlWithAuth = graphql.defaults({
+    request: {
+      hook: createAppAuth({
+        appId: config.github.appId,
+        privateKey: config.github.privateKey,
+        installationId: installations[0].id,
+      }).hook,
+    },
+  });
+  return graphqlWithAuth;
+}, { timeout: -1 });
+
+async function getGithubIssuesUncached(reference: string): Promise<Issue[]> {
   const [owner, repository] = reference.split('/');
   const issues = [];
   let hasNextPage = true;
   let after = null;
 
-  /* TODO CACHE ME */
-  const { data: installations } = await createAppAuth({ appId: config.github.appId, privateKey: config.github.privateKey }).hook(githubRequest, 'GET /app/installations');
-  const graphqlWithAuth = graphql.defaults({
-    request: {
-      hook: createAppAuth({ appId: config.github.appId, privateKey: config.github.privateKey, installationId: installations[0].id }).hook,
-    },
-  });
+  const graphqlClient = await getGraphqlClient();
 
   while (hasNextPage) {
     // eslint-disable-next-line no-await-in-loop
-    const data = await graphqlWithAuth(GRAPHQL_QUERY_GET_ISSUES, { cursor: after, owner, name: repository }) as any;
+    const data = await graphqlClient(
+      GRAPHQL_QUERY_GET_ISSUES,
+      {
+        cursor: after, owner, name: repository,
+      },
+    ) as any;
     issues.push(...data.organization.repository.issues.nodes.map((issue: { key: any; issueTypes: { nodes: { name: string; }[]; }; resolution: any; status: any; summary: any; assignees: { nodes: { name: string; }[]; }; reporter: { login: any; }; createdAt: any; updatedAt: any; url: any; }) => ({
       key: issue.key,
       issueType: issue.issueTypes?.nodes.map((n: { name: string }) => n.name).join(', '),
@@ -123,10 +138,4 @@ async function getGithubIssues(reference: string): Promise<Issue[]> {
 
   return issues;
 }
-
-export default {
-  getPluginInfo,
-  getIssuesForPlugin,
-  getJiraIssues,
-  getGithubIssues,
-};
+export const getGithubIssues = memoize(getGithubIssuesUncached, { timeout: 30 * 60 * 1000 });

@@ -18,7 +18,7 @@ export class Config {
       if (fs.existsSync(process.env.GITHUB_APP_PRIVATE_KEY)) {
         githubPrivateKey = fs.readFileSync(process.env.GITHUB_APP_PRIVATE_KEY).toString();
       } else {
-        githubPrivateKey = (new Buffer(process.env.GITHUB_APP_PRIVATE_KEY, 'base64')).toString('ascii');
+        githubPrivateKey = Buffer.from(process.env.GITHUB_APP_PRIVATE_KEY, 'base64').toString('ascii');
       }
     }
     this.jira = {
@@ -28,7 +28,7 @@ export class Config {
     };
     this.github = {
       appId: process.env.GITHUB_APP_ID || '',
-      privateKey: githubPrivateKey
+      privateKey: githubPrivateKey,
     };
 
     if (!this.jira.username) {

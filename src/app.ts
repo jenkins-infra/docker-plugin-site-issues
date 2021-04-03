@@ -12,7 +12,7 @@ const app = express();
 app.set('trust proxy', true);
 app.set('env', process.env.NODE_ENV || app.get('env') || 'development');
 
-if (app.get('env') == 'production') {
+if (app.get('env') === 'production') {
   app.use(logger('combined'));
 } else {
   app.use(logger('dev'));
