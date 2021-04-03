@@ -15,7 +15,7 @@ query getIssues($owner: String!, $name: String!, $cursor: String) {
           }
           status:state
           resolution: state
-          summary: bodyText
+          summary: title
           url: url
           assignees(first:100) {
             nodes {
