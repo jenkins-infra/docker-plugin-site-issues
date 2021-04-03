@@ -1,9 +1,8 @@
 import express from 'express';
-import path from 'path';
+import { errorReporter } from 'express-youch';
 import cors from 'cors';
 import helmet from 'helmet';
 import logger from 'morgan';
-import compression from 'compression';
 import indexRouter from './routes/index';
 import issuesRouter from './routes/issues';
 
@@ -16,14 +15,21 @@ if (app.get('env') == 'production') {
   app.use(logger('combined'));
 } else {
   app.use(logger('dev'));
-  app.use(require('express-youch').errorReporter());
 }
-app.use(compression())
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
 app.use('/', indexRouter);
 app.use('/issues', issuesRouter);
+
+app.use(errorReporter({
+  links: [
+    ({message}) => {
+      const url = `https://stackoverflow.com/search?q=${encodeURIComponent(`[node.js] ${message}`)}`;
+        return `<a href="${url}" target="_blank" title="Search on stackoverflow">Search stackoverflow</a>`;
+    }
+  ]
+}));
 
 export default app;
