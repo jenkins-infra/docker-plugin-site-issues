@@ -10,12 +10,13 @@ import issuesRouter from './routes/issues';
 const app = express();
 
 app.set('trust proxy', true);
-app.set('env', process.env.NODE_ENV || app.get('env') || 'development'));
+app.set('env', process.env.NODE_ENV || app.get('env') || 'development');
 
 if (app.get('env') == 'production') {
   app.use(logger('combined'));
 } else {
   app.use(logger('dev'));
+  app.use(require('express-youch').errorReporter());
 }
 app.use(compression())
 app.use(cors());
