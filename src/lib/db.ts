@@ -1,8 +1,5 @@
-import path from 'path';
-import { readFileSync } from 'fs';
-
 import axios, { Method } from 'axios';
-import { graphql } from '@octokit/graphql';
+import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { request as githubRequest } from '@octokit/request';
 import memoize from 'timed-memoize';
@@ -10,8 +7,6 @@ import memoize from 'timed-memoize';
 import config from './config';
 
 const quoteStr = (str: string) => `"${str.replace('"', '\\"')}"`;
-
-const GRAPHQL_QUERY_GET_ISSUES = readFileSync(path.join(__dirname, '..', '..', 'graphql', 'getGithubIssues.graphql')).toString();
 
 export type Issue = {
   readonly key: string;
@@ -86,12 +81,16 @@ async function getJiraIssuesUncached(componentId: number, statuses = ['Open', 'I
 }
 export const getJiraIssues = memoize(getJiraIssuesUncached, { timeout: 30 * 60 * 1000 });
 
-const getGraphqlClient = memoize(async () => {
+async function getRestClientUncached() {
   const { data: installations } = await createAppAuth({
     appId: config.github.appId,
     privateKey: config.github.privateKey,
-  }).hook(githubRequest, 'GET /app/installations');
-  const graphqlWithAuth = graphql.defaults({
+  }).hook(githubRequest.defaults({
+    baseUrl: process.env.GITHUB_SERVER,
+  }), 'GET /app/installations');
+
+  return new Octokit({
+    baseUrl: process.env.GITHUB_SERVER,
     request: {
       hook: createAppAuth({
         appId: config.github.appId,
@@ -100,42 +99,27 @@ const getGraphqlClient = memoize(async () => {
       }).hook,
     },
   });
-  return graphqlWithAuth;
-}, { timeout: -1 });
+}
+const getRestClient = memoize(getRestClientUncached, { timeout: -1 });
 
 async function getGithubIssuesUncached(reference: string): Promise<Issue[]> {
   const [owner, repository] = reference.split('/');
-  const issues = [];
-  let hasNextPage = true;
-  let after = null;
 
-  const graphqlClient = await getGraphqlClient();
+  const octokit = await getRestClient();
+  const issues = await octokit.paginate('GET /repos/{owner}/{repo}/issues', { owner, repo: repository }) || [];
 
-  while (hasNextPage) {
-    // eslint-disable-next-line no-await-in-loop
-    const data = await graphqlClient(
-      GRAPHQL_QUERY_GET_ISSUES,
-      {
-        cursor: after, owner, name: repository,
-      },
-    ) as any;
-    issues.push(...data.organization.repository.issues.nodes.map((issue: { key: any; issueTypes: { nodes: { name: string; }[]; }; resolution: any; status: any; summary: any; assignees: { nodes: { name: string; }[]; }; reporter: { login: any; }; createdAt: any; updatedAt: any; url: any; }) => ({
-      key: `#${issue.key}`,
-      issueType: issue.issueTypes?.nodes.map((n: { name: string }) => n.name).join(', '),
-      priority: '',
-      resolution: issue.resolution,
-      status: issue.status,
-      summary: issue.summary,
-      assignee: issue.assignees.nodes.map((n: { name: string }) => n.name).join(', '),
-      reporter: issue.reporter.login,
-      created: issue.createdAt,
-      updated: issue.updatedAt,
-      url: issue.url,
-    })));
-    hasNextPage = data.organization.repository.issues.pageInfo.hasNextPage;
-    after = data.organization.repository.issues.pageInfo.endCursor;
-  }
-
-  return issues;
+  return issues.map((issue) => ({
+    key: `#${issue.number}`,
+    issueType: issue.labels?.map((n) => n.name).join(', '),
+    priority: '',
+    resolution: issue.state,
+    status: issue.state,
+    summary: issue.title,
+    assignee: issue.assignees?.map((n) => n?.login || '').join(', ') || '',
+    reporter: issue.user?.login || '',
+    created: issue.created_at,
+    updated: issue.updated_at,
+    url: issue.html_url,
+  }));
 }
 export const getGithubIssues = memoize(getGithubIssuesUncached, { timeout: 30 * 60 * 1000 });

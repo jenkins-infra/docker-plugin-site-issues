@@ -16,8 +16,8 @@
   "main": "./src/bin/www.ts",
   "dependencies": {
     "@octokit/auth-app": "^3.3.0",
-    "@octokit/graphql": "^4.6.1",
     "@octokit/request": "^5.4.14",
+    "@octokit/rest": "^18.5.2",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
     "express": "~4.16.1",
