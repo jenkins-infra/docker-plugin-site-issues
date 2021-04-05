@@ -10,6 +10,8 @@
     "start": "node ./dist/bin/www",
     "build": "tsc",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "jest",
+    "jest:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "dev": "nodemon",
     "dev:debug": "nodemon --inspect-brk"
   },
