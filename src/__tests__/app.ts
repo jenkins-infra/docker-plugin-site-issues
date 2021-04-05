@@ -2,7 +2,7 @@ import request from 'supertest';
 import { getRoutes } from 'get-routes';
 import app from '../app';
 
-jest.mock('../lib/db');
+jest.mock('../db');
 
 describe('app', () => {
   it('should have all the routes', () => {

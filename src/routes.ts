@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { Request, Response } from 'express';
 import {
   getIssuesForPlugin, Issue, getJiraIssues, getGithubIssues,
-} from './lib/db';
+} from './db';
 
 const pkg = JSON.parse(readFileSync(path.join(__dirname, '..', 'package.json')).toString());
 

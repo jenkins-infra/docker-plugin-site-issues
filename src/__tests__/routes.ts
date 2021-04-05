@@ -8,7 +8,7 @@ import {
 
 const jestPlayback = require('jest-playback');
 
-jest.mock('../lib/db');
+jest.mock('../db');
 
 jestPlayback.setup(__dirname);
 
