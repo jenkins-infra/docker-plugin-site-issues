@@ -1,7 +1,8 @@
-import axios, { Method } from 'axios';
+import axios from 'axios';
 import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { request as githubRequest } from '@octokit/request';
+import JiraApi from 'jira-client';
 import memoize from 'timed-memoize';
 
 import config from './config';
@@ -43,29 +44,21 @@ async function getIssuesForPluginUncached(pluginName: string) {
 }
 export const getIssuesForPlugin = memoize(getIssuesForPluginUncached, { timeout: 30 * 60 * 1000 });
 
-async function getJiraIssuesUncached(componentId: number, statuses = ['Open', 'In Progress', 'Reopened']): Promise<Issue[]> {
+async function getJiraIssuesUncached(componentId: number, startAt = 0, statuses = ['Open', 'In Progress', 'Reopened']): Promise<Issue[]> {
   const maxResults = 100;
-  const startAt = 0;
 
-  const axiosOptions = {
-    method: 'get' as Method,
-    url: `${config.jira.url.replace(/\/+$/, '')}/rest/api/2/search`,
-    auth: {
-      username: config.jira.username,
-      password: config.jira.password,
-    },
-    params: {
-      startAt,
-      maxResults,
-      jql: `project=JENKINS AND status in (${statuses.map(quoteStr).join(',')}) AND component=${componentId}`,
-    },
-  };
-  // TODO - loop through all the pages
-  // if (obj.getInt("startAt") + jsonIssues.length() < obj.getInt("total")) {
-  //   jiraIssues.issues.addAll(getIssues(pluginName, startAt + maxResults).issues);
-  // }
-  const response = await axios(axiosOptions).then((response) => response.data);
-  return response.issues.map((issue: { key: string; fields: { issuetype?: { name?: string; }; priority?: { name?: string; }; status?: { status?: string; }; resolution: { name?: string; }; summary?: string; assignee?: { displayName?: string; }; reporter?: { displayName?: string; }; created: string; updated: string; }; }) => ({
+  const parsedUrl = new URL(config.jira.url);
+  const jira = new JiraApi({
+    protocol: parsedUrl.protocol,
+    host: parsedUrl.host,
+    port: parsedUrl.port,
+    base: parsedUrl.pathname.replace(/^\/+/g, ''),
+    username: config.jira.username,
+    password: config.jira.password,
+  });
+  const response = await jira.searchJira(`project=JENKINS AND status in (${statuses.map(quoteStr).join(',')}) AND component=${componentId}`, { startAt, maxResults });
+
+  const issues = response.issues.map((issue: any) => ({
     key: issue.key,
     issueType: issue?.fields?.issuetype?.name,
     priority: issue?.fields?.priority?.name,
@@ -78,6 +71,10 @@ async function getJiraIssuesUncached(componentId: number, statuses = ['Open', 'I
     updated: issue?.fields?.updated,
     url: `${config.jira.url.replace(/\/+$/, '')}/browse/${issue.key}`,
   }));
+  if (response.startAt + response.issues.length < response.total) {
+    issues.push(...await getJiraIssuesUncached(componentId, startAt + maxResults, statuses));
+  }
+  return issues;
 }
 export const getJiraIssues = memoize(getJiraIssuesUncached, { timeout: 30 * 60 * 1000 });
 
@@ -86,11 +83,11 @@ async function getRestClientUncached() {
     appId: config.github.appId,
     privateKey: config.github.privateKey,
   }).hook(githubRequest.defaults({
-    baseUrl: process.env.GITHUB_SERVER,
+    baseUrl: config.github.server,
   }), 'GET /app/installations');
 
   return new Octokit({
-    baseUrl: process.env.GITHUB_SERVER,
+    baseUrl: config.github.server,
     request: {
       hook: createAppAuth({
         appId: config.github.appId,

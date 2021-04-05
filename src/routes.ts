@@ -1,10 +1,27 @@
-import express from 'express';
-import asyncHandler from 'express-async-handler';
+import path from 'path';
+import { readFileSync } from 'fs';
+import { Request, Response } from 'express';
 import {
   getIssuesForPlugin, Issue, getJiraIssues, getGithubIssues,
-} from '../lib/db';
+} from './lib/db';
 
-const router = express.Router();
+const pkg = JSON.parse(readFileSync(path.join(__dirname, '..', 'package.json')).toString());
+
+/* GET home page. */
+export function indexRoute(_req: Request, res: Response) {
+  res.type('text').send('OK');
+}
+
+export function healthcheckRoute(_req: Request, res: Response) {
+  res.type('text').send('OK');
+}
+
+export function infoRoute(_req: Request, res: Response) {
+  res.json({
+    commit: pkg.version,
+    version: pkg.version,
+  });
+}
 
 function compareIssuesDates(a: Issue, b: Issue) {
   return (Date.parse(b.created) - Date.parse(a.created))
@@ -12,7 +29,7 @@ function compareIssuesDates(a: Issue, b: Issue) {
 }
 
 /* GET issues listing. */
-router.get('/:plugin/open', asyncHandler(async (req, res): Promise<void> => {
+export async function issuesRoute(req: Request, res: Response): Promise<void> {
   const pluginTrackers = await getIssuesForPlugin(req.params.plugin);
   if (!pluginTrackers) {
     res.status(404).send('No such plugin');
@@ -30,6 +47,4 @@ router.get('/:plugin/open', asyncHandler(async (req, res): Promise<void> => {
     .then((issues) => issues.flat())
     .then((issues) => issues.sort(compareIssuesDates));
   res.json({ issues: sortedIssues });
-}));
-
-export default router;
+}

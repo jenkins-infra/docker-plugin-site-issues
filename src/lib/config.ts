@@ -8,6 +8,7 @@ export class Config {
   };
 
   readonly github: {
+    readonly server: string | undefined
     readonly appId: string
     readonly privateKey: string
   };
@@ -27,6 +28,7 @@ export class Config {
       password: process.env.JIRA_PASSWORD || '',
     };
     this.github = {
+      server: process.env.GITHUB_SERVER,
       appId: process.env.GITHUB_APP_ID || '',
       privateKey: githubPrivateKey,
     };
