@@ -1,28 +1,8 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 import http from 'http';
+import gracefulShutdown from 'http-graceful-shutdown';
 import app from '../app';
-
-
-/**
- * Get port from environment and store in Express.
- */
-
-const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
-
-const server = http.createServer(app);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -45,41 +25,46 @@ function normalizePort(val: string): string | number | false {
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * Get port from environment and store in Express.
  */
 
-function onError(error: { syscall: string; code: any; }): void {
+const port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+const server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+gracefulShutdown(server.listen(port));
+server.on('error', (error: NodeJS.ErrnoException): void => {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  const bind = typeof port === 'string'
-    ? `Pipe ${port}`
-    : `Port ${port}`;
+  const bind = typeof app.get('port') === 'string'
+    ? `Pipe ${app.get('port')}`
+    : `Port ${app.get('port')}`;
 
   // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(`${bind} requires elevated privileges`);
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(`${bind} is already in use`);
-      process.exit(1);
-      break;
-    default:
-      throw error;
+  if (error.code === 'EACCES') {
+    console.error(`${bind} requires elevated privileges`);
+    process.exit(1);
+  } else if (error.code === 'EADDRINUSE') {
+    console.error(`${bind} is already in use`);
+    process.exit(1);
   }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening(): void {
+  throw error;
+});
+server.on('listening', (): void => {
   const addr = server.address() as string | { port: number };
   const bind = typeof addr === 'string'
     ? `pipe ${addr}`
     : `port ${addr.port}`;
   console.log(`Listening on ${bind}`);
-}
+});

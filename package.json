@@ -27,6 +27,7 @@
     "express-prom-bundle": "^6.3.5",
     "express-youch": "^1.0.1",
     "helmet": "^4.4.1",
+    "http-graceful-shutdown": "^3.0.1",
     "jira-client": "^6.21.1",
     "morgan": "~1.9.1",
     "prom-client": "^13.1.0",
