@@ -1,0 +1,1 @@
+parallelDockerUpdatecli([imageName: 'plugin-site-issues', rebuildImageOnPeriodicJob: false])
