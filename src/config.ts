@@ -1,5 +1,8 @@
 import fs from 'fs';
 
+// from https://stackoverflow.com/questions/8571501/how-to-check-whether-a-string-is-base64-encoded-or-not
+const BASE64_REGEX = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
+
 export class Config {
   readonly jira: {
     readonly url: string
@@ -18,8 +21,10 @@ export class Config {
     if (process.env.GITHUB_APP_PRIVATE_KEY) {
       if (fs.existsSync(process.env.GITHUB_APP_PRIVATE_KEY)) {
         githubPrivateKey = fs.readFileSync(process.env.GITHUB_APP_PRIVATE_KEY).toString();
-      } else {
+      } else if (BASE64_REGEX.test(process.env.GITHUB_APP_PRIVATE_KEY)) {
         githubPrivateKey = Buffer.from(process.env.GITHUB_APP_PRIVATE_KEY, 'base64').toString('ascii');
+      } else {
+        githubPrivateKey = process.env.GITHUB_APP_PRIVATE_KEY;
       }
     }
     this.jira = {
