@@ -8,7 +8,13 @@ describe('app', () => {
   it('should have all the routes', () => {
     expect(getRoutes(app)).toEqual({
       delete: [],
-      get: ['/', '/healthcheck', '/info', '/api/plugins/:plugin/issues/open'],
+      get: [
+        '/',
+        '/info/healthcheck',
+        '/info/routes',
+        '/info',
+        '/api/plugins/:plugin/issues/open',
+      ],
       patch: [],
       post: [],
       put: [],
@@ -24,9 +30,9 @@ describe('app', () => {
     });
   });
 
-  describe('GET /healthcheck', () => {
+  describe('GET /info/healthcheck', () => {
     it('should return 200', async () => {
-      const response = await request(app).get('/healthcheck');
+      const response = await request(app).get('/info/healthcheck');
       expect(response.text).toEqual('OK');
       expect(response.status).toEqual(200);
       expect(response.header['content-type']).toMatch(/text\/plain/);

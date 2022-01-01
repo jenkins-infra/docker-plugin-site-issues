@@ -5,9 +5,10 @@ import helmet from 'helmet';
 import logger from 'morgan';
 import promMid from 'express-prom-bundle';
 import asyncHandler from 'express-async-handler';
+import { getRoutes } from 'get-routes';
 import {
   indexRoute, healthcheckRoute, infoRoute, issuesRoute,
-} from './routes';
+} from './routes.js';
 
 const app = express();
 
@@ -34,7 +35,8 @@ app.use(promMid({
 /* anything registered after this will be included in prom middleware */
 
 app.get('/', asyncHandler(indexRoute));
-app.get('/healthcheck', asyncHandler(healthcheckRoute));
+app.get('/info/healthcheck', asyncHandler(healthcheckRoute));
+app.get('/info/routes', (_, res) => { res.json(getRoutes(app)); });
 app.get('/info', asyncHandler(infoRoute));
 app.get('/api/plugins/:plugin/issues/open', asyncHandler(issuesRoute));
 

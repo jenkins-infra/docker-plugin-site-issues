@@ -3,12 +3,16 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: [
     '@typescript-eslint',
+    'import',
   ],
   env: {
     commonjs: true,
     es2021: true,
   },
-  extends: ['airbnb-typescript/base'],
+  extends: [
+    'airbnb-typescript/base',
+    'plugin:import/recommended',
+  ],
   parserOptions: {
     ecmaVersion: 12,
     project: './tsconfig.json',

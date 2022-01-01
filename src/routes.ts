@@ -1,11 +1,8 @@
-import path from 'path';
-import { readFileSync } from 'fs';
+import findPackageJson from 'find-package-json';
 import { Request, Response } from 'express';
 import {
   getIssuesForPlugin, Issue, getJiraIssues, getGithubIssues,
-} from './db';
-
-const pkg = JSON.parse(readFileSync(path.join(__dirname, '..', 'package.json')).toString());
+} from './db.js';
 
 /* GET home page. */
 export function indexRoute(_req: Request, res: Response) {
@@ -17,9 +14,10 @@ export function healthcheckRoute(_req: Request, res: Response) {
 }
 
 export function infoRoute(_req: Request, res: Response) {
+  const { version } = findPackageJson().next().value || {};
   res.json({
-    commit: pkg.version,
-    version: pkg.version,
+    commit: version,
+    version: version,
   });
 }
 

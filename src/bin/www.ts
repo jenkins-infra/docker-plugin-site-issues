@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 import http from 'http';
 import gracefulShutdown from 'http-graceful-shutdown';
-import app from '../app';
+import app from '../app.js';
 
 /**
  * Normalize a port into a number, string, or false.

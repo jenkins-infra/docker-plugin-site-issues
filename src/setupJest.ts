@@ -6,4 +6,5 @@ if (process.env.JEST_PLAYBACK_MODE !== 'record') {
   process.env.JIRA_USERNAME = 'fakeuser';
   process.env.JIRA_PASSWORD = 'fakepassword';
   process.env.GITHUB_APP_ID = 'github_app_id';
+  jest.setTimeout(60 * 1000);
 }
