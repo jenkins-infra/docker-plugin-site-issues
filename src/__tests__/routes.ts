@@ -1,75 +1,76 @@
-import { getMockReq, getMockRes } from '@jest-mock/express';
+import test from 'ava';
+import httpMocks from 'node-mocks-http';
 import {
   indexRoute,
   healthcheckRoute,
   infoRoute,
   issuesRoute,
-} from '../routes';
+} from '../routes.js';
+// @ts-ignore
+import { setupTests } from '../ava-nock/src/index.js';
+import { DB } from '../db.js';
 
-const jestPlayback = require('jest-playback');
+setupTests(test);
 
-jest.mock('../db');
+test('routes > infoRoute > should return 200 with commit and version', async (t) => {
+  const req = httpMocks.createRequest();
+  req.db = new DB();
+  const res = httpMocks.createResponse();
 
-jestPlayback.setup(__dirname);
+  infoRoute(req, res);
 
-describe('routes', () => {
-  describe('GET /issues/:plugin/open', () => {
-    it('should return 404 on missing plugin', async () => {
-      const req = getMockReq({ params: { plugin: '---missing-plugin' } });
-      const { res } = getMockRes();
+  const data = res._getJSONData();
+  t.is(200, res.statusCode);
 
-      await issuesRoute(req, res);
+  t.true(res._isEndCalled());
+  t.true(res._isJSON());
+  t.true(res._isUTF8());
 
-      expect((res.json as jest.Mock).mock.calls).toMatchSnapshot();
-      expect((res.send as jest.Mock).mock.calls).toMatchSnapshot();
-      expect((res.type as jest.Mock).mock.calls).toMatchSnapshot();
-    });
+  t.truthy(data.commit);
+  t.truthy(data.version);
+});
 
-    it('should return 200', async () => {
-      const req = getMockReq({ params: { plugin: 'configuration-as-code' } });
-      const { res } = getMockRes();
+test('routes > healthcheckRoute > should return 200', async (t) => {
+  const req = httpMocks.createRequest();
+  req.db = new DB();
+  const res = httpMocks.createResponse();
 
-      await issuesRoute(req, res);
+  healthcheckRoute(req, res);
 
-      expect((res.json as jest.Mock).mock.calls).toMatchSnapshot();
-      expect((res.send as jest.Mock).mock.calls).toMatchSnapshot();
-      expect((res.type as jest.Mock).mock.calls).toMatchSnapshot();
-    });
-  });
+  t.is('OK', res._getData());
+  t.is('text/plain', res.getHeader('Content-Type') as string);
+});
 
-  describe('GET /', () => {
-    it('should return 200', async () => {
-      const req = getMockReq();
-      const { res } = getMockRes();
+test('routes > indexRoute > should return 200', async (t) => {
+  const req = httpMocks.createRequest();
+  req.db = new DB();
+  const res = httpMocks.createResponse();
 
-      indexRoute(req, res);
+  indexRoute(req, res);
 
-      expect((res.send as jest.Mock)).toHaveBeenCalledWith('OK');
-      expect((res.type as jest.Mock)).toHaveBeenCalledWith('text');
-    });
-  });
+  t.is('OK', res._getData());
+  t.is('text/plain', res.getHeader('Content-Type') as string);
+});
 
-  describe('GET /healthcheck', () => {
-    it('should return 200', async () => {
-      const req = getMockReq();
-      const { res } = getMockRes();
+test('routes > issuesRoute > should return 200', async (t) => {
+  const req = httpMocks.createRequest({ params: { plugin: 'configuration-as-code' } });
+  req.db = new DB();
+  const res = httpMocks.createResponse();
 
-      healthcheckRoute(req, res);
+  await issuesRoute(req, res);
 
-      expect((res.send as jest.Mock)).toHaveBeenCalledWith('OK');
-      expect((res.type as jest.Mock)).toHaveBeenCalledWith('text');
-    });
-  });
+  t.is(200, res.statusCode);
+  t.true(res._isJSON());
+  t.true(res._isUTF8());
+  t.snapshot(res._getJSONData());
+});
 
-  describe('GET /info', () => {
-    it('should return 200 with commit and version', async () => {
-      const req = getMockReq();
-      const { res } = getMockRes();
+test('routes > issuesRoute > should return 404 on missing plugin', async (t) => {
+  const req = httpMocks.createRequest({ params: { plugin: '---missing-plugin' } });
+  req.db = new DB();
+  const res = httpMocks.createResponse();
 
-      infoRoute(req, res);
+  await issuesRoute(req, res);
 
-      expect((res.json as jest.Mock).mock.calls[0][0]).toHaveProperty('commit');
-      expect((res.json as jest.Mock).mock.calls[0][0]).toHaveProperty('version');
-    });
-  });
+  t.is(404, res.statusCode);
 });

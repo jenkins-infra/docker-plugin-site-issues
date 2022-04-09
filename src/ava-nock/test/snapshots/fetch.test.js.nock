@@ -1,0 +1,107 @@
+[
+  [
+    "another test",
+    [
+    ]
+  ],
+  [
+    "using fetch to get JSON",
+    [
+      {
+        "body": "",
+        "method": "GET",
+        "path": "/ws/2/artist/5b11f4ce-a62d-471e-81fc-a69a8278c7da?fmt=json",
+        "rawHeaders": [
+          "Date",
+          "Thu, 15 Apr 2021 07:00:44 GMT",
+          "Content-Type",
+          "application/json; charset=utf-8",
+          "Transfer-Encoding",
+          "chunked",
+          "Connection",
+          "close",
+          "Vary",
+          "Accept-Encoding",
+          "X-RateLimit-Limit",
+          "1200",
+          "X-RateLimit-Remaining",
+          "997",
+          "X-RateLimit-Reset",
+          "1618470045",
+          "Server",
+          "Plack::Handler::Starlet",
+          "ETag",
+          "W/\"ea810862a07030366f1cb37dc4a7e907\"",
+          "Access-Control-Allow-Origin",
+          "*"
+        ],
+        "reqheaders": {
+          "accept": [
+            "*/*"
+          ],
+          "accept-encoding": [
+            "gzip,deflate"
+          ],
+          "connection": [
+            "close"
+          ],
+          "host": "musicbrainz.org"
+        },
+        "response": "{\"begin_area\":{\"sort-name\":\"Aberdeen\",\"name\":\"Aberdeen\",\"type\":null,\"type-id\":null,\"id\":\"a640b45c-c173-49b1-8030-973603e895b5\",\"disambiguation\":\"\"},\"gender\":null,\"end_area\":null,\"ipis\":[],\"sort-name\":\"Nirvana\",\"life-span\":{\"end\":\"1994-04-05\",\"begin\":\"1988-01\",\"ended\":true},\"type\":\"Group\",\"isnis\":[\"0000000123486830\",\"0000000123487390\"],\"type-id\":\"e431f5f6-b5d2-343d-8b36-72607fffb74b\",\"gender-id\":null,\"id\":\"5b11f4ce-a62d-471e-81fc-a69a8278c7da\",\"begin-area\":{\"sort-name\":\"Aberdeen\",\"name\":\"Aberdeen\",\"type\":null,\"type-id\":null,\"id\":\"a640b45c-c173-49b1-8030-973603e895b5\",\"disambiguation\":\"\"},\"area\":{\"iso-3166-1-codes\":[\"US\"],\"type-id\":null,\"name\":\"United States\",\"type\":null,\"sort-name\":\"United States\",\"disambiguation\":\"\",\"id\":\"489ce91b-6658-3307-9877-795b68554c98\"},\"end-area\":null,\"disambiguation\":\"90s US grunge band\",\"country\":\"US\",\"name\":\"Nirvana\"}",
+        "responseIsBinary": false,
+        "scope": "https://musicbrainz.org:443",
+        "status": 200
+      }
+    ]
+  ],
+  [
+    "using fetch to get XML",
+    [
+      {
+        "body": "",
+        "method": "GET",
+        "path": "/ws/2/artist/5b11f4ce-a62d-471e-81fc-a69a8278c7da",
+        "rawHeaders": [
+          "Date",
+          "Thu, 15 Apr 2021 07:00:45 GMT",
+          "Content-Type",
+          "application/xml; charset=utf-8",
+          "Transfer-Encoding",
+          "chunked",
+          "Connection",
+          "close",
+          "Vary",
+          "Accept-Encoding",
+          "X-RateLimit-Limit",
+          "1200",
+          "X-RateLimit-Remaining",
+          "856",
+          "X-RateLimit-Reset",
+          "1618470045",
+          "Server",
+          "Plack::Handler::Starlet",
+          "ETag",
+          "W/\"7baabb90f872d8f2e6a89774d80a93a7\"",
+          "Access-Control-Allow-Origin",
+          "*"
+        ],
+        "reqheaders": {
+          "accept": [
+            "*/*"
+          ],
+          "accept-encoding": [
+            "gzip,deflate"
+          ],
+          "connection": [
+            "close"
+          ],
+          "host": "musicbrainz.org"
+        },
+        "response": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<metadata xmlns=\"http://musicbrainz.org/ns/mmd-2.0#\"><artist id=\"5b11f4ce-a62d-471e-81fc-a69a8278c7da\" type=\"Group\" type-id=\"e431f5f6-b5d2-343d-8b36-72607fffb74b\"><name>Nirvana</name><sort-name>Nirvana</sort-name><disambiguation>90s US grunge band</disambiguation><isni-list><isni>0000000123486830</isni><isni>0000000123487390</isni></isni-list><country>US</country><area id=\"489ce91b-6658-3307-9877-795b68554c98\"><name>United States</name><sort-name>United States</sort-name><iso-3166-1-code-list><iso-3166-1-code>US</iso-3166-1-code></iso-3166-1-code-list></area><begin-area id=\"a640b45c-c173-49b1-8030-973603e895b5\"><name>Aberdeen</name><sort-name>Aberdeen</sort-name></begin-area><life-span><begin>1988-01</begin><end>1994-04-05</end><ended>true</ended></life-span></artist></metadata>\n",
+        "responseIsBinary": false,
+        "scope": "https://musicbrainz.org:443",
+        "status": 200
+      }
+    ]
+  ]
+]

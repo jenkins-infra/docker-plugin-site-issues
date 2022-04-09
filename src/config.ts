@@ -6,8 +6,6 @@ const BASE64_REGEX = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)
 export class Config {
   readonly jira: {
     readonly url: string
-    readonly username: string
-    readonly password: string
   };
 
   readonly github: {
@@ -29,8 +27,6 @@ export class Config {
     }
     this.jira = {
       url: process.env.JIRA_URL || 'https://issues.jenkins.io',
-      username: process.env.JIRA_USERNAME || '',
-      password: process.env.JIRA_PASSWORD || '',
     };
     this.github = {
       server: process.env.GITHUB_SERVER,
@@ -38,19 +34,11 @@ export class Config {
       privateKey: githubPrivateKey,
     };
 
-    if (!this.jira.username) {
-      throw new Error('JIRA_USERNAME not set');
-    }
-
-    if (!this.jira.password) {
-      throw new Error('JIRA_PASSWORD not set');
-    }
-
     if (!this.github.appId) {
       throw new Error('GITHUB_APP_ID not set');
     }
 
-    if (!this.jira.password) {
+    if (!this.github.privateKey) {
       throw new Error('GITHUB_APP_PRIVATE_KEY not set');
     }
   }

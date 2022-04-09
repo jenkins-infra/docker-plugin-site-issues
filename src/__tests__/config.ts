@@ -1,6 +1,6 @@
-import config from '../config';
+import test from 'ava';
+import config from '../config.js';
 
-describe('config', () => {
-  it('go', () => {
-  });
+test('config > go', (t) => {
+  t.true(!!config);
 });

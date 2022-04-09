@@ -11,81 +11,69 @@
     "start": "node ./dist/bin/www",
     "build": "tsc",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
-    "test": "jest",
-    "jest:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test": "ava",
+    "test:cache": "NOCK_MODE=cache ava",
+    "test:coverage": "nyc ava",
+    "test:live": "NOCK_MODE=live ava",
+    "test:only": "ava",
+    "test:play": "NOCK_MODE=play ava",
+    "test:preview": "NOCK_MODE=preview ava",
+    "test:record": "NOCK_MODE=record ava",
+    "jest:debug": "node --inspect-brk node_modules/.bin/ava --runInBand",
     "dev": "nodemon",
     "dev:debug": "nodemon --inspect-brk"
   },
   "main": "./src/bin/www.ts",
   "dependencies": {
     "@octokit/auth-app": "^3.6.1",
-    "@octokit/request": "^5.6.2",
+    "@octokit/request": "^5.6.3",
     "@octokit/rest": "^18.12.0",
-    "axios": "^0.24.0",
+    "axios": "^0.26.1",
     "cors": "^2.8.5",
-    "express": "~4.17.2",
+    "express": "~4.17.3",
     "express-async-handler": "^1.2.0",
     "express-prom-bundle": "^6.4.1",
     "express-youch": "^1.0.1",
     "find-package-json": "^1.2.0",
-    "get-routes": "^2.1.5",
-    "helmet": "^4.6.0",
-    "http-graceful-shutdown": "^3.1.5",
-    "jira-client": "^8.0.0",
-    "mem": "^9.0.1",
+    "get-routes": "^2.1.6",
+    "helmet": "^5.0.2",
+    "http-graceful-shutdown": "^3.1.7",
+    "jira-client": "^8.1.0",
     "morgan": "~1.10.0",
     "node-cache": "^5.1.2",
     "prom-client": "^14.0.1",
-    "timed-memoize": "^2.4.2"
+    "typescript-memoize": "^1.1.0"
   },
   "devDependencies": {
-    "@jest-mock/express": "^1.4.5",
     "@types/cors": "^2.8.12",
     "@types/debug": "^4.1.7",
     "@types/express": "^4.17.13",
     "@types/find-package-json": "^1.2.2",
-    "@types/jest": "^27.4.0",
-    "@types/jira-client": "^7.1.2",
+    "@types/jira-client": "^7.1.4",
     "@types/morgan": "^1.9.3",
-    "@types/node": "^17.0.5",
-    "@types/supertest": "^2.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.8.1",
-    "@typescript-eslint/parser": "^5.8.1",
-    "eslint": "^8.5.0",
+    "@types/node": "^17.0.23",
+    "@types/supertest": "^2.0.12",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "ava": "4.1.0",
+    "eslint": "^8.12.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-airbnb-typescript": "^16.1.0",
-    "eslint-plugin-import": "^2.25.3",
+    "eslint-config-airbnb-typescript": "^16.2.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsx-a11y": "^6.5.1",
-    "jest": "^27.4.5",
-    "jest-playback": "^3.0.0",
+    "json-parse-better-errors": "^1.0.2",
+    "json-stable-stringify": "^1.0.1",
+    "nock": "^13.2.4",
+    "node-mocks-http": "^1.11.0",
     "nodemon": "^2.0.15",
-    "supertest": "^6.1.6",
-    "ts-jest": "^27.1.2",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
-  },
-  "jest": {
-    "verbose": true,
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "globals": {
-      "ts-jest": {
-        "useESM": true
-      }
-    },
-    "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    },
-    "testEnvironment": "node",
-    "preset": "ts-jest/presets/default-esm",
-    "modulePathIgnorePatterns": [
-      "<rootDir>/dist/"
-    ],
-    "setupFiles": [
-      "<rootDir>/src/setupJest.ts"
-    ],
-    "transform": {}
+    "object-hash": "^3.0.0",
+    "sinon": "^13.0.1",
+    "supertest": "^6.2.2",
+    "temp-write": "^5.0.0",
+    "testdouble": "^3.16.4",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   },
   "nodemonConfig": {
     "restartable": "rs",
@@ -107,5 +95,40 @@
     "execMap": {
       "ts": "node --loader ts-node/esm"
     }
+  },
+  "ava": {
+    "extensions": {
+      "ts": "module"
+    },
+    "nodeArguments": [
+      "--loader=ts-node/esm"
+    ],
+    "require": [
+      "./src/setupAva.ts"
+    ]
+  },
+  "ava-nock": {
+    "pathFilter": [
+      "([?&]secretKey=)([^&#]+)",
+      "$1<secret>"
+    ],
+    "headerFilter": {
+      "x-cache-status": [
+        ".+",
+        ""
+      ],
+      "authorization": [
+        ".+",
+        "<secret>"
+      ]
+    },
+    "requestBodyFilter": [
+      "(\"password\":\\s*)\"[^\"]+\"",
+      "$1\"<secret>\""
+    ],
+    "responseBodyFilter": [
+      "(\"(password|authorization)\":\\s*)\"[^\"]+\"",
+      "$1\"<secret>\""
+    ]
   }
 }

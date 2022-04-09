@@ -1,0 +1,65 @@
+[
+  [
+    "app > /info > should return 200 with commit and version",
+    [
+      {
+        "body": "",
+        "method": "GET",
+        "path": "/info",
+        "rawHeaders": [
+          "Access-Control-Allow-Origin",
+          "*",
+          "Content-Security-Policy",
+          "default-src 'self';base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "Cross-Origin-Embedder-Policy",
+          "require-corp",
+          "Cross-Origin-Opener-Policy",
+          "same-origin",
+          "Cross-Origin-Resource-Policy",
+          "same-origin",
+          "X-DNS-Prefetch-Control",
+          "off",
+          "Expect-CT",
+          "max-age=0",
+          "X-Frame-Options",
+          "SAMEORIGIN",
+          "Strict-Transport-Security",
+          "max-age=15552000; includeSubDomains",
+          "X-Download-Options",
+          "noopen",
+          "X-Content-Type-Options",
+          "nosniff",
+          "Origin-Agent-Cluster",
+          "?1",
+          "X-Permitted-Cross-Domain-Policies",
+          "none",
+          "Referrer-Policy",
+          "no-referrer",
+          "X-XSS-Protection",
+          "0",
+          "Content-Type",
+          "application/json; charset=utf-8",
+          "Content-Length",
+          "36",
+          "ETag",
+          "W/\"24-DRThQBePc7Y8v4g1S3lvI5TAAoM\"",
+          "Date",
+          "Mon, 04 Apr 2022 05:04:36 GMT",
+          "Connection",
+          "close"
+        ],
+        "reqheaders": {
+          "accept-encoding": "gzip, deflate",
+          "host": "127.0.0.1:34279"
+        },
+        "response": {
+          "commit": "0.0.0",
+          "version": "0.0.0"
+        },
+        "responseIsBinary": false,
+        "scope": "http://127.0.0.1:34279",
+        "status": 200
+      }
+    ]
+  ]
+]

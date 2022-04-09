@@ -1,8 +1,12 @@
 import findPackageJson from 'find-package-json';
 import { Request, Response } from 'express';
-import {
-  getIssuesForPlugin, Issue, getJiraIssues, getGithubIssues,
-} from './db.js';
+import { DB, Issue } from './db.js';
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    db: DB
+  }
+}
 
 /* GET home page. */
 export function indexRoute(_req: Request, res: Response) {
@@ -28,7 +32,7 @@ function compareIssuesDates(a: Issue, b: Issue) {
 
 /* GET issues listing. */
 export async function issuesRoute(req: Request, res: Response): Promise<void> {
-  const pluginTrackers = await getIssuesForPlugin(req.params.plugin);
+  const pluginTrackers = await req.db.getIssuesForPlugin(req.params.plugin);
   if (!pluginTrackers) {
     res.status(404).send('No such plugin');
     return;
@@ -36,9 +40,9 @@ export async function issuesRoute(req: Request, res: Response): Promise<void> {
   const promises = [];
   for (const tracker of pluginTrackers) {
     if (tracker.type === 'jira') {
-      promises.push(getJiraIssues(tracker.reference));
+      promises.push(req.db.getJiraIssues(parseInt(tracker.reference, 10)));
     } else if (tracker.type === 'github') {
-      promises.push(getGithubIssues(tracker.reference));
+      promises.push(req.db.getGithubIssues(tracker.reference));
     }
   }
   const sortedIssues = await Promise.all(promises)
