@@ -14,10 +14,10 @@ USER node
 WORKDIR /app
 
 ENV NODE_ENV=production
-COPY ["package.json", "package-lock.json*", "./"]
+COPY --chown=node:node ["package.json", "package-lock.json*", "./"]
 RUN npm install --production
 
-COPY . .
+COPY --chown=node:node . .
 COPY --chown=node:node --from=builder /app/dist ./dist
 
 CMD [ "node", "./dist/bin/www" ]
