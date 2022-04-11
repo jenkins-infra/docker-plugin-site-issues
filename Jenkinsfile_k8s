@@ -1,5 +1,5 @@
 buildDockerAndPublishImage(
-  imageName: 'plugin-site-issues',
+  'plugin-site-issues',
   [
     imageName: 'plugin-site-issues', 
     rebuildImageOnPeriodicJob: false,
