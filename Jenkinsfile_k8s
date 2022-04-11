@@ -1,1 +1,6 @@
-parallelDockerUpdatecli([imageName: 'plugin-site-issues', rebuildImageOnPeriodicJob: false])
+buildDockerAndPublishImage([
+    imageName: 'plugin-site-issues', 
+    rebuildImageOnPeriodicJob: false,
+    useContainer: false,
+    automaticSemanticVersioning: false,
+])
