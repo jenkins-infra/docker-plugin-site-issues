@@ -50,3 +50,15 @@ export async function issuesRoute(req: Request, res: Response): Promise<void> {
     .then((issues) => issues.sort(compareIssuesDates));
   res.json({ issues: sortedIssues });
 }
+
+/* GET releases listing. */
+export async function releasesRoute(req: Request, res: Response): Promise<void> {
+  const pluginTrackers = await req.db.getIssuesForPlugin(req.params.plugin);
+  if (!pluginTrackers) {
+    res.status(404).send('No such plugin');
+    return;
+  }
+  res.json({
+    releases: await req.db.getGithubReleases(req.params.plugin),
+  });
+}
