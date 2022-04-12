@@ -3,6 +3,9 @@ import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { request as githubRequest } from '@octokit/request';
 import JiraApi from 'jira-client';
+import normalizeUrl from 'normalize-url';
+import { remark } from 'remark';
+import remarkGfm from 'remark-gfm';
 import { MemoizeExpiring } from 'typescript-memoize';
 import NodeCache from 'node-cache';
 
@@ -20,25 +23,15 @@ const cache = new NodeCache({
 
 export type Issue = {
   readonly key: string;
-
   readonly issueTypes: string[];
-
   readonly priority: string;
-
   readonly status: string;
-
   readonly resolution: string;
-
   readonly summary: string;
-
   readonly assignee: string;
-
   readonly reporter: string;
-
   readonly created: string;
-
   readonly updated: string;
-
   readonly url: string;
 };
 
@@ -49,6 +42,52 @@ type IssueIndex = {
   readonly reportUrl?: string;
 };
 
+export type Release = {
+  readonly tagName: string;
+  readonly name: string;
+  readonly publishedAt: string;
+  readonly htmlURL: string;
+  readonly bodyHTML: string;
+};
+
+type Dependency = {
+  readonly name: string;
+  readonly optional: boolean;
+  readonly version: number;
+};
+
+type Developer = {
+  readonly name: string;
+  readonly optional: boolean;
+  readonly version: string;
+};
+
+export type PluginInfo = {
+  readonly buildDate: string;
+  readonly defaultBranch: string;
+  readonly dependencies: Array<Dependency>;
+  readonly developers: Array<Developer>;
+  readonly excerpt: string;
+  readonly gav: string;
+  readonly issueTrackers: Array<IssueIndex>;
+  readonly labels: Array<string>;
+  readonly minimumJavaVersion: string;
+  readonly name: string;
+  readonly popularity: number;
+  readonly previousTimestamp: Date;
+  readonly previousVersion: number;
+  readonly releaseTimestamp: Date;
+  readonly requiredCore: string;
+  readonly scm: string;
+  readonly sha1: string;
+  readonly sha256: string;
+  readonly size: number;
+  readonly title: string;
+  readonly url: string;
+  readonly version: string;
+  readonly wiki: string;
+};
+
 export interface IDB {
   getIssuesForPlugin(pluginName: string) : Promise<Array<IssueIndex> | null>;
   getJiraIssues(component: number | string, startAt: number, statuses: Array<string>): Promise<Issue[]>;
@@ -56,6 +95,16 @@ export interface IDB {
 }
 
 export class DB implements IDB {
+  @MemoizeExpiring(DEFAULT_TIMEOUT)
+  async getPluginInfo(pluginName: string) : Promise<PluginInfo | null> {
+    const updateJson = await axios.get('https://updates.jenkins.io/current/update-center.actual.json')
+      .then((response) => response?.data?.plugins || {});
+    if (updateJson && Object.prototype.hasOwnProperty.call(updateJson, pluginName)) {
+      return updateJson[pluginName];
+    }
+    return null;
+  }
+
   @MemoizeExpiring(DEFAULT_TIMEOUT)
   async getIssuesForPlugin(pluginName: string) : Promise<Array<IssueIndex> | null> {
     let pluginIssuesIndex : Record<string, Array<IssueIndex>> | undefined = cache.get('issues.index.json');
@@ -171,5 +220,51 @@ export class DB implements IDB {
       }
     }
     return returnedIssues;
+  }
+
+  @MemoizeExpiring(DEFAULT_TIMEOUT)
+  async getGithubReleases(pluginName: string): Promise<Release[] | null> {
+    const plugin = await this.getPluginInfo(pluginName);
+    if (!plugin) {
+      return null;
+    }
+
+    const scmUrl = plugin.scm.replace( /https?:\/\/github.com\//, '').replace(/\/+$/, '').trim().split('/');
+    console.log({ scmUrl });
+
+    if (scmUrl.length != 2) {
+      console.log(`Not sure what to do with SCM URL of ${scmUrl}`);
+      return null;
+    }
+
+    const octokit = await this.getRestClient();
+    const iterator = octokit.paginate.iterator(octokit.rest.repos.listReleases, {
+      per_page: 100,
+      owner: scmUrl[0],
+      repo: scmUrl[1],
+    });
+
+    const ret : Array<Release> = [];
+    for await (const { data: releases } of iterator) {
+      for (const release of releases) {
+
+        const baseUrl = normalizeUrl(release.html_url + '/../../../issues');
+        ret.push({
+          tagName: release.tag_name,
+          name: release.name || pluginName,
+          publishedAt: release.published_at || (new Date().getTime()).toString(),
+          htmlURL: release.html_url,
+          bodyHTML: await remark().use(remarkGfm).process(release.body || '')
+            .then(r => r.toString())
+            .then(str => str
+              .replaceAll(/<!--.*?-->/g, '')
+              .replaceAll(/#\b([0-9]+)\b/g, '[#$1](' + baseUrl + '/$1)')
+              .replaceAll(/(\b|\s)+@([a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38})(\b|\s)+/g, '$1[**@$2**](https://github.com/$2)$3'),
+            ).then(str => str.trim()),
+        });
+      }
+    }
+
+    return ret;
   }
 }

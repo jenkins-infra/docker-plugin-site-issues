@@ -41,7 +41,7 @@ test('app >/info/healthcheck > should return 200', async (t) => {
 });
 
 test('app > /api/plugins/:plugin/issues/open > should return 200', async (t) => {
-  const response = await request(app).get('/api/plugins/configuration-as-code/issues/open');
+  const response = await request(app).get('/api/plugin/configuration-as-code/issues/open');
   t.deepEqual(response.body, { issues: [] });
   t.deepEqual(response.status, 200);
   // TODO: expect(response.header['content-type']).toMatch(/\/json/);
@@ -55,7 +55,8 @@ test('app > should have all the routes', (t) => {
       '/info/healthcheck',
       '/info/routes',
       '/info',
-      '/api/plugins/:plugin/issues/open',
+      '/api/plugin/:plugin/issues/open',
+      '/api/plugin/:plugin/releases',
     ],
     patch: [],
     post: [],

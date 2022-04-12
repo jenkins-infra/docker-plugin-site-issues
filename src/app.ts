@@ -7,7 +7,7 @@ import promMid from 'express-prom-bundle';
 import asyncHandler from 'express-async-handler';
 import { getRoutes } from 'get-routes';
 import {
-  indexRoute, healthcheckRoute, infoRoute, issuesRoute,
+  indexRoute, healthcheckRoute, infoRoute, issuesRoute, releasesRoute,
 } from './routes.js';
 import { DB } from './db.js';
 
@@ -50,7 +50,8 @@ app.get('/', asyncHandler(indexRoute));
 app.get('/info/healthcheck', asyncHandler(healthcheckRoute));
 app.get('/info/routes', (_, res) => { res.json(getRoutes(app)); });
 app.get('/info', asyncHandler(infoRoute));
-app.get('/api/plugins/:plugin/issues/open', asyncHandler(issuesRoute));
+app.get('/api/plugin/:plugin/issues/open', asyncHandler(issuesRoute));
+app.get('/api/plugin/:plugin/releases', asyncHandler(releasesRoute));
 
 app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
   err.statusCode = err.statusCode || 500;
