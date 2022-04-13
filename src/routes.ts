@@ -20,7 +20,7 @@ export function healthcheckRoute(_req: Request, res: Response) {
 export function infoRoute(_req: Request, res: Response) {
   const { version } = findPackageJson().next().value || {};
   res.json({
-    commit: version,
+    commit: process.env.GIT_COMMIT_REV || version,
     version: version,
   });
 }
