@@ -13,6 +13,8 @@ RUN mkdir /app && chown node:node -R /app
 USER node
 WORKDIR /app
 
+ARG GIT_COMMIT_REV
+ENV GIT_COMMIT_REV=$GIT_COMMIT_REV
 ENV NODE_ENV=production
 COPY --chown=node:node ["package.json", "package-lock.json*", "./"]
 RUN npm install --production
