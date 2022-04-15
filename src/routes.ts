@@ -32,13 +32,13 @@ function compareIssuesDates(a: Issue, b: Issue) {
 
 /* GET issues listing. */
 export async function issuesRoute(req: Request, res: Response): Promise<void> {
-  const pluginTrackers = await req.db.getIssuesForPlugin(req.params.plugin);
-  if (!pluginTrackers) {
+  const issueTrackers = await req.db.getIssuesForPlugin(req.params.plugin);
+  if (!issueTrackers) {
     res.status(404).send('No such plugin');
     return;
   }
   const promises = [];
-  for (const tracker of pluginTrackers) {
+  for (const tracker of issueTrackers) {
     if (tracker.type === 'jira') {
       promises.push(req.db.getJiraIssues(parseInt(tracker.reference, 10)));
     } else if (tracker.type === 'github') {
@@ -53,12 +53,11 @@ export async function issuesRoute(req: Request, res: Response): Promise<void> {
 
 /* GET releases listing. */
 export async function releasesRoute(req: Request, res: Response): Promise<void> {
-  const pluginTrackers = await req.db.getIssuesForPlugin(req.params.plugin);
-  if (!pluginTrackers) {
+  const pluginInfo = await req.db.getPluginInfo(req.params.plugin);
+  if (!pluginInfo) {
     res.status(404).send('No such plugin');
     return;
   }
-  res.json({
-    releases: await req.db.getGithubReleases(req.params.plugin),
-  });
+  const reference = pluginInfo.scm.replace(/https?:\/\/github.com\//, '').replace(/\/+$/, '').trim();
+  res.json({ releases: await req.db.getGithubReleases(reference) });
 }

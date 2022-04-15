@@ -12,14 +12,6 @@
     "build": "tsc",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "ava",
-    "test:cache": "NOCK_MODE=cache ava",
-    "test:coverage": "nyc ava",
-    "test:live": "NOCK_MODE=live ava",
-    "test:only": "ava",
-    "test:play": "NOCK_MODE=play ava",
-    "test:preview": "NOCK_MODE=preview ava",
-    "test:record": "NOCK_MODE=record ava",
-    "jest:debug": "node --inspect-brk node_modules/.bin/ava --runInBand",
     "dev": "nodemon",
     "dev:debug": "nodemon --inspect-brk"
   },
@@ -40,7 +32,6 @@
     "http-graceful-shutdown": "^3.1.7",
     "jira-client": "^8.1.0",
     "morgan": "~1.10.0",
-    "node-cache": "^5.1.2",
     "normalize-url": "^7.0.3",
     "prom-client": "^14.0.1",
     "remark": "^14.0.2",
@@ -112,30 +103,6 @@
     ],
     "require": [
       "./src/setupAva.ts"
-    ]
-  },
-  "ava-nock": {
-    "pathFilter": [
-      "([?&]secretKey=)([^&#]+)",
-      "$1<secret>"
-    ],
-    "headerFilter": {
-      "x-cache-status": [
-        ".+",
-        ""
-      ],
-      "authorization": [
-        ".+",
-        "<secret>"
-      ]
-    },
-    "requestBodyFilter": [
-      "(\"password\":\\s*)\"[^\"]+\"",
-      "$1\"<secret>\""
-    ],
-    "responseBodyFilter": [
-      "(\"(password|authorization)\":\\s*)\"[^\"]+\"",
-      "$1\"<secret>\""
     ]
   }
 }

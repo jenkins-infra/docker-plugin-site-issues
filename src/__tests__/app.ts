@@ -1,9 +1,17 @@
 import test from 'ava';
+import nock from 'nock';
 import request from 'supertest';
 import { getRoutes } from 'get-routes';
 import app from '../app.js';
 import { DB } from '../db.js';
 import * as td from 'testdouble';
+import { clear } from 'typescript-memoize';
+
+test.beforeEach(() => {
+  nock.disableNetConnect();
+  nock.enableNetConnect('127.0.0.1');
+  clear(['db']);
+});
 
 test.before(() => {
   const db = td.object('DB') as DB;

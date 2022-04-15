@@ -10,8 +10,7 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 import remarkGithub from 'remark-github';
-import { MemoizeExpiring } from 'typescript-memoize';
-import NodeCache from 'node-cache';
+import { Memoize } from 'typescript-memoize';
 
 import config from './config.js';
 
@@ -20,10 +19,6 @@ const DEFAULT_TIMEOUT = 60 * 60 * 1000;
 function quoteStr(str: string) {
   return `"${str.replace('"', '\\"')}"`;
 }
-
-const cache = new NodeCache({
-  stdTTL: DEFAULT_TIMEOUT,
-});
 
 export type Issue = {
   readonly key: string;
@@ -93,13 +88,23 @@ export type PluginInfo = {
 };
 
 export interface IDB {
-  getIssuesForPlugin(pluginName: string): Promise<Array<IssueIndex> | null>;
   getJiraIssues(component: number | string, startAt: number, statuses: Array<string>): Promise<Issue[]>;
   getGithubIssues(reference: string): Promise<Issue[]>;
 }
 
 export class DB implements IDB {
-  @MemoizeExpiring(DEFAULT_TIMEOUT)
+  @Memoize({ tags: ['db'], expiring: DEFAULT_TIMEOUT })
+  async getIssuesForPlugin(pluginName: string) : Promise<Array<IssueIndex> | null> {
+    const pluginIssuesIndex = await axios.get('https://reports.jenkins.io/issues.index.json')
+      .then((response) => response.data || {});
+    if (pluginIssuesIndex && Object.prototype.hasOwnProperty.call(pluginIssuesIndex, pluginName)) {
+      return pluginIssuesIndex[pluginName];
+    }
+    return null;
+  }
+
+
+  @Memoize({ tags: ['db'], expiring: DEFAULT_TIMEOUT })
   async getPluginInfo(pluginName: string): Promise<PluginInfo | null> {
     const updateJson = await axios.get('https://updates.jenkins.io/current/update-center.actual.json')
       .then((response) => response?.data?.plugins || {});
@@ -109,21 +114,11 @@ export class DB implements IDB {
     return null;
   }
 
-  @MemoizeExpiring(DEFAULT_TIMEOUT)
-  async getIssuesForPlugin(pluginName: string): Promise<Array<IssueIndex> | null> {
-    let pluginIssuesIndex: Record<string, Array<IssueIndex>> | undefined = cache.get('issues.index.json');
-    if (!pluginIssuesIndex) {
-      pluginIssuesIndex = await axios.get('https://reports.jenkins.io/issues.index.json')
-        .then((response) => response.data || {});
-      cache.set('issues.index.json', pluginIssuesIndex);
-    }
-    if (pluginIssuesIndex && Object.prototype.hasOwnProperty.call(pluginIssuesIndex, pluginName)) {
-      return pluginIssuesIndex[pluginName];
-    }
-    return null;
-  }
-
-  @MemoizeExpiring(DEFAULT_TIMEOUT, (component, startAt, statues) => JSON.stringify([component, startAt, statues]))
+  @Memoize({
+    tags: ['db'],
+    expiring: DEFAULT_TIMEOUT,
+    hashFunction: (component, startAt, statues) => JSON.stringify([component, startAt, statues]),
+  })
   async getJiraIssues(component: number | string, startAt = 0, statuses = ['Open', 'In Progress', 'Reopened']): Promise<Issue[]> {
     const maxResults = 1000;
 
@@ -162,7 +157,6 @@ export class DB implements IDB {
     return issues;
   }
 
-  @MemoizeExpiring(DEFAULT_TIMEOUT)
   private async getRestClient() {
     const { data: installations } = await createAppAuth({
       appId: config.github.appId,
@@ -182,7 +176,7 @@ export class DB implements IDB {
     });
   }
 
-  @MemoizeExpiring(DEFAULT_TIMEOUT)
+  @Memoize({ tags: ['db'], expiring: DEFAULT_TIMEOUT })
   async getGithubIssues(reference: string): Promise<Issue[]> {
     const [owner, repo] = reference.split('/');
 
@@ -225,25 +219,15 @@ export class DB implements IDB {
     return returnedIssues;
   }
 
-  @MemoizeExpiring(DEFAULT_TIMEOUT)
-  async getGithubReleases(pluginName: string): Promise<Release[] | null> {
-    const plugin = await this.getPluginInfo(pluginName);
-    if (!plugin) {
-      return null;
-    }
-
-    const scmUrl = plugin.scm.replace(/https?:\/\/github.com\//, '').replace(/\/+$/, '').trim().split('/');
-
-    if (scmUrl.length != 2) {
-      console.log(`Not sure what to do with SCM URL of ${scmUrl}`);
-      return null;
-    }
+  @Memoize({ tags: ['db'], expiring: DEFAULT_TIMEOUT })
+  async getGithubReleases(reference: string): Promise<Release[] | null> {
+    const [owner, repo] = reference.split('/');
 
     const octokit = await this.getRestClient();
     const releases = await octokit.rest.repos.listReleases({
       per_page: 10,
-      owner: scmUrl[0],
-      repo: scmUrl[1],
+      owner,
+      repo,
     });
 
     if (!releases) {return null;}
@@ -254,7 +238,7 @@ export class DB implements IDB {
       const baseUrl = normalizeUrl(release.html_url + '/../../../issues');
       ret.push({
         tagName: release.tag_name,
-        name: release.name || pluginName,
+        name: release.name || repo,
         publishedAt: release.published_at || (new Date().getTime()).toString(),
         htmlURL: release.html_url,
         bodyHTML: await remark()

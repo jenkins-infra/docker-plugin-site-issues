@@ -1,0 +1,13 @@
+[
+  {
+    "id": 12345,
+    "app_id": 1234,
+    "app_slug": "jenkins-plugin-site",
+    "target_id": 107424,
+    "target_type": "Organization",
+    "permissions": {
+      "contents": "read",
+      "metadata": "read"
+    }
+  }
+]
