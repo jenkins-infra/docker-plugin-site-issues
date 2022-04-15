@@ -68,6 +68,7 @@
     "object-hash": "^3.0.0",
     "sinon": "^13.0.1",
     "supertest": "^6.2.2",
+    "tap-xunit": "^2.4.1",
     "temp-write": "^5.0.0",
     "testdouble": "^3.16.4",
     "ts-node": "^10.7.0",
