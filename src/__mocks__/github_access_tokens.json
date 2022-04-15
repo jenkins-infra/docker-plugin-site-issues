@@ -1,0 +1,9 @@
+{
+  "token": "ghs_thisismytokenname",
+  "expires_at": "2022-04-14T23:58:39Z",
+  "permissions": {
+    "contents": "read",
+    "metadata": "read"
+  },
+  "repository_selection": "all"
+}

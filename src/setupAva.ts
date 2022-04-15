@@ -1,8 +1,7 @@
 process.env.NODE_ENV = 'test';
 
-if (['record', 'cache', 'play', 'preview'].includes(process.env.NOCK_MODE || '')) {
-  // from https://docs.aws.amazon.com/code-samples/latest/catalog/php-cloudfront-my-private-key.pem.html
-  process.env.GITHUB_APP_PRIVATE_KEY = Buffer.from(`-----BEGIN RSA PRIVATE KEY-----
+// from https://docs.aws.amazon.com/code-samples/latest/catalog/php-cloudfront-my-private-key.pem.html
+process.env.GITHUB_APP_PRIVATE_KEY = Buffer.from(`-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAywYF71cKSo3xyi7/0S7N1blFCmBX4eZz0gXf+zyBfomuqhwrekZbvI1SRYQR
 rbN740DuuguNYde+tdQOylnL76eEI1QF45/MGcAhbD3hWxH93sLf+0VyUQ22WD79FPZnBY/W4Y45
 5W/Z824Ek1SubKmozQV/WOMz0EYjvN+m62d1psuse9uWn0JwLQ/701HnkkFksq9guWPGpvmcIXHV
@@ -25,6 +24,5 @@ du/S47ceTF25KR76sAtA2gELrEwv8ABJh3neHx+ozjjPpx9/VGyRAop0gBwQ+XgRXmYgd7obI17H
 vVMI5JT++fXVG7h+itsKeuW2ROOZL41NyWxwaMLURXY2GMteGSBHpgmlQDHxdi/aL10QY9MLdf8a
 daBAqhoDEr4SoKju8pagw6lqm65XeARyWkxqFqAZbb2K3bWY3x9qZT6oubLrCDGDKEXAMPLE
 -----END RSA PRIVATE KEY-----`).toString('base64');
-  process.env.JIRA_URL = 'https://issues.jenkins.io';
-  process.env.GITHUB_APP_ID = 'github_app_id';
-}
+process.env.JIRA_URL = 'https://issues.jenkins.io';
+process.env.GITHUB_APP_ID = 'github_app_id';
