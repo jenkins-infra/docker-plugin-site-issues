@@ -4,9 +4,7 @@ WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install
 COPY . .
-RUN npm run build
-RUN npm run test
-
+RUN npm run build && npm run test
 
 FROM node:16.13.1
 RUN mkdir /app && chown node:node -R /app
