@@ -5,5 +5,6 @@ buildDockerAndPublishImage(
     rebuildImageOnPeriodicJob: false,
     useContainer: false,
     automaticSemanticVersioning: false,
+    targetplatforms: 'linux/amd64,linux/arm64'
   ]
 )

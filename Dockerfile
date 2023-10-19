@@ -5,8 +5,8 @@ COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install
 COPY . .
 RUN npm run build
+# hadolint ignore=DL3059
 RUN npm run test
-
 
 FROM node:16.13.1
 RUN mkdir /app && chown node:node -R /app
