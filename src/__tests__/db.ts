@@ -52,8 +52,11 @@ test('db > getJiraIssues > succeeds', async (t) => {
 test('db > getGithubReleases > succeeds', async (t) => {
   nock('https://api.github.com').get('/app/installations')
     .replyWithFile(200, 'src/__mocks__/github_installations.json', { 'Content-Type': 'application/json' });
+  nock('https://api.github.com').post('/app/installations/12345/access_tokens')
+    .replyWithFile(200, 'src/__mocks__/github_access_tokens.json', { 'Content-Type': 'application/json' });
   nock('https://api.github.com')
     .get('/repos/jenkinsci/credentials-plugin/releases')
+    .query({ per_page: 10 })
     .replyWithFile(200, 'src/__mocks__/github-credentials-releases.json', { 'Content-Type': 'application/json' });
 
     const db = new DB();
