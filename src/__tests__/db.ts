@@ -48,3 +48,15 @@ test('db > getJiraIssues > succeeds', async (t) => {
   const issues = await db.getJiraIssues(21481);
   t.snapshot(issues);
 });
+
+test('db > getGithubReleases > succeeds', async (t) => {
+  nock('https://api.github.com').get('/app/installations')
+    .replyWithFile(200, 'src/__mocks__/github_installations.json', { 'Content-Type': 'application/json' });
+  nock('https://api.github.com')
+    .get('/repos/jenkinsci/credentials-plugin/releases')
+    .replyWithFile(200, 'src/__mocks__/github-credentials-releases.json', { 'Content-Type': 'application/json' });
+
+    const db = new DB();
+    const releases = await db.getGithubReleases('jenkinsci/credentials-plugin');
+    t.snapshot(releases);
+});
