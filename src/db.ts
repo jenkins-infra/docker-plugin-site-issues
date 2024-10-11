@@ -238,7 +238,7 @@ export class DB implements IDB {
       const baseUrl = normalizeUrl(release.html_url + '/../../../issues');
       ret.push({
         tagName: release.tag_name,
-        name: release.name || repo,
+        name: release.name || release.tag_name,
         publishedAt: release.published_at || (new Date().getTime()).toString(),
         htmlURL: release.html_url,
         bodyHTML: await remark()
