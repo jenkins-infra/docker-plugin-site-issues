@@ -62,3 +62,22 @@ export async function getJiraIssues() {
     },
   ];
 }
+
+export async function getGithubReleases() {
+  return [
+    {
+      tagName: '1381.v2c3a_12074da_b_',
+      name: '1381.v2c3a_12074da_b_',
+      publishedAt: '2024-10-02T13:47:33Z',
+      htmlURL: 'https://api.github.com/repos/jenkinsci/credentials-plugin/releases/178006192',
+      bodyHTML: '## 🔒  Security fixes\r\n\r\n* Fix [SECURITY-3373](https://www.jenkins.io/security/advisory/2024-10-02/#SECURITY-3373). This fix requires Jenkins 2.479 or newer, LTS 2.462.3 or newer, to be effective.\r\n',
+    },
+    {
+      tagName: '1384.vf0a_2ed06f9c6',
+      name: '1384.vf0a_2ed06f9c6',
+      publishedAt: '2024-10-06T22:15:25Z',
+      htmlURL: 'https://api.github.com/repos/jenkinsci/credentials-plugin/releases/178008509',
+      bodyHTML: '## 🚀 New features and improvements\n\n* Update \'Add credentials\' dropdown button (#551) @janfaracik\n\n## ✍ Other changes\n\n* Fix typo in name of internal class registering `SecretBytesRedaction` (#562) @daniel-beck\n',
+    },
+  ];
+}
