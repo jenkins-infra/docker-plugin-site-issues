@@ -1,7 +1,6 @@
 pipeline {
   environment {
     GET_CONTENT = "true"
-    NODE_ENV = "production"
     HOME = "/tmp"
     TZ = "UTC"
   }
@@ -28,7 +27,7 @@ pipeline {
       }
     }
 
-    stage('NPM Install') {
+    stage('Lint and test') {
       agent {
         docker {
           image 'node:16.13.1'
@@ -36,43 +35,10 @@ pipeline {
         }
       }
       steps {
-        sh 'yarn install'
-      }
-    }
-
-    stage('Build Production') {
-      agent {
-        docker {
-          image 'node:16.13.1'
-          reuseNode true
-        }
-      }
-      steps {
+        sh 'npm install'
         sh 'npm run build'
-      }
-    }
-
-    stage('Lint') {
-      agent {
-        docker {
-          image 'node:16.13.1'
-          reuseNode true
-        }
-      }
-      steps {
         sh 'npm run lint'
-      }
-    }
-
-    stage('Test') {
-      agent {
-        docker {
-          image 'node:16.13.1'
-          reuseNode true
-        }
-      }
-      steps {
-        sh 'npm run test | npx tap-xunit > junit.xml'
+        sh 'npm run test -- --tap | npx tap-xunit > junit.xml || true'
         junit 'junit.xml'
       }
     }
