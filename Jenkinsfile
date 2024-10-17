@@ -35,7 +35,7 @@ pipeline {
         }
       }
       steps {
-        sh 'npm install'
+        sh 'npm clean-install'
         sh 'npm run build'
         sh 'npm run lint'
         sh 'npm run test -- --tap | npx tap-xunit > junit.xml || true'
