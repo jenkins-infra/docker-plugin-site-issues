@@ -59,7 +59,7 @@ test('db > getGithubReleases > succeeds', async (t) => {
     .query({ per_page: 10 })
     .replyWithFile(200, 'src/__mocks__/github-credentials-releases.json', { 'Content-Type': 'application/json' });
 
-    const db = new DB();
-    const releases = await db.getGithubReleases('jenkinsci/credentials-plugin');
-    t.snapshot(releases);
+  const db = new DB();
+  const releases = await db.getGithubReleases('jenkinsci/credentials-plugin');
+  t.snapshot(releases);
 });
