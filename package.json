@@ -50,7 +50,7 @@
     "@types/jira-client": "^7.1.4",
     "@types/morgan": "^1.9.3",
     "@types/node": "^17.0.23",
-    "@types/supertest": "^2.0.12",
+    "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@typescript-eslint/parser": "^5.18.0",
     "ava": "4.3.3",
