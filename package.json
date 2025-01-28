@@ -45,7 +45,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.12",
     "@types/debug": "^4.1.7",
-    "@types/express": "^4.17.13",
+    "@types/express": "^5.0.0",
     "@types/find-package-json": "^1.2.2",
     "@types/jira-client": "^7.1.4",
     "@types/morgan": "^1.9.3",
