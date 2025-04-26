@@ -24,7 +24,7 @@
     "cors": "^2.8.5",
     "express": "~4.21.0",
     "express-async-handler": "^1.2.0",
-    "express-prom-bundle": "^6.4.1",
+    "express-prom-bundle": "^8.0.0",
     "express-youch": "^1.0.1",
     "find-package-json": "^1.2.0",
     "get-routes": "^2.1.6",
