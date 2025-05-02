@@ -17,9 +17,9 @@
   },
   "main": "./src/bin/www.ts",
   "dependencies": {
-    "@octokit/auth-app": "^3.6.1",
-    "@octokit/request": "^5.6.3",
-    "@octokit/rest": "^18.12.0",
+    "@octokit/auth-app": "^7.0.0",
+    "@octokit/request": "^9.0.0",
+    "@octokit/rest": "^21.0.0",
     "axios": "^1.0.0",
     "cors": "^2.8.5",
     "express": "~4.21.0",
