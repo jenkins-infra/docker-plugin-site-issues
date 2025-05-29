@@ -1,13 +1,16 @@
 import axios from 'axios';
+import deepmerge from 'deepmerge'
 import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { request as githubRequest } from '@octokit/request';
+import {defaultSchema} from 'hast-util-sanitize'
 import JiraApi from 'jira-client';
 import normalizeUrl from 'normalize-url';
 import { remark } from 'remark';
 import remarkHtml from 'remark-html';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import remarkAdmonitions from 'remark-github-beta-blockquote-admonitions'
 import remarkEmoji from 'remark-emoji';
 import remarkGithub from 'remark-github';
 import { Memoize } from 'typescript-memoize';
@@ -241,19 +244,25 @@ export class DB implements IDB {
         name: release.name || release.tag_name,
         publishedAt: release.published_at || (new Date().getTime()).toString(),
         htmlURL: release.html_url,
-        bodyHTML: await remark()
-          .use(remarkEmoji)
-          .use(remarkGfm)
-          .use(remarkBreaks)
-          .use(remarkGithub, {
-            repository: baseUrl,
-          })
-          .use(remarkHtml)
-          .process((release.body || '').replaceAll(/<!--.*?-->/g, '').trim())
-          .then(r => r.toString().trim()),
+        bodyHTML: await processMarkdown(release.body || '', baseUrl),
       });
     }
 
     return ret;
   }
+}
+
+export function processMarkdown(content: string, baseUrl: string) {
+  const schema = deepmerge(defaultSchema, {attributes: {'*': ['className']}})
+  return remark()
+   .use(remarkEmoji)
+   .use(remarkGfm)
+   .use(remarkBreaks)
+   .use(remarkAdmonitions)
+   .use(remarkGithub, {
+     repository: baseUrl,
+   })
+   .use(remarkHtml, {sanitize: false})
+   .process(content.replaceAll(/<!--.*?-->/g, '').trim())
+   .then(r => r.toString().trim())
 }
