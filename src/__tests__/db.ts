@@ -1,6 +1,6 @@
 import test from 'ava';
 import nock from 'nock';
-import { DB } from '../db.js';
+import { DB, processMarkdown } from '../db.js';
 import { clear } from 'typescript-memoize';
 
 test.beforeEach(() => {
@@ -63,3 +63,12 @@ test('db > getGithubReleases > succeeds', async (t) => {
   const releases = await db.getGithubReleases('jenkinsci/credentials-plugin');
   t.snapshot(releases);
 });
+
+test("db > processMarkdown > succeeds", async (t) => {
+  const markdown = `
+> [!WARNING]
+> This is a breaking change for anyone currently configuring matrix authorization using these plugins.
+  `
+  const html = await processMarkdown(markdown, "https://github.com/foo/bar");
+  t.snapshot(html);
+})
