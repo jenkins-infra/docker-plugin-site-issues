@@ -64,11 +64,11 @@ test('db > getGithubReleases > succeeds', async (t) => {
   t.snapshot(releases);
 });
 
-test("db > processMarkdown > succeeds", async (t) => {
+test('db > processMarkdown > succeeds', async (t) => {
   const markdown = `
 > [!WARNING]
 > This is a breaking change for anyone currently configuring matrix authorization using these plugins.
-  `
-  const html = await processMarkdown(markdown, "https://github.com/foo/bar");
+  `;
+  const html = await processMarkdown(markdown, 'https://github.com/foo/bar');
   t.snapshot(html);
-})
+});

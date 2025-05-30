@@ -1,16 +1,15 @@
 import axios from 'axios';
-import deepmerge from 'deepmerge'
 import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { request as githubRequest } from '@octokit/request';
-import {defaultSchema} from 'hast-util-sanitize'
+import { defaultSchema } from 'hast-util-sanitize';
 import JiraApi from 'jira-client';
 import normalizeUrl from 'normalize-url';
 import { remark } from 'remark';
 import remarkHtml from 'remark-html';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
-import remarkAdmonitions from 'remark-github-beta-blockquote-admonitions'
+import remarkAdmonitions from 'remark-github-beta-blockquote-admonitions';
 import remarkEmoji from 'remark-emoji';
 import remarkGithub from 'remark-github';
 import { Memoize } from 'typescript-memoize';
@@ -93,6 +92,25 @@ export type PluginInfo = {
 export interface IDB {
   getJiraIssues(component: number | string, startAt: number, statuses: Array<string>): Promise<Issue[]>;
   getGithubIssues(reference: string): Promise<Issue[]>;
+}
+
+export function processMarkdown(content: string, baseUrl: string) {
+  const schema = Object.assign(defaultSchema, { });
+  if (schema.attributes) {
+    schema.attributes['*']?.push('className');
+  }
+
+  return remark()
+    .use(remarkEmoji)
+    .use(remarkGfm)
+    .use(remarkBreaks)
+    .use(remarkAdmonitions)
+    .use(remarkGithub, {
+      repository: baseUrl,
+    })
+    .use(remarkHtml, {sanitize: schema})
+    .process(content.replaceAll(/<!--.*?-->/g, '').trim())
+    .then(r => r.toString().trim());
 }
 
 export class DB implements IDB {
@@ -250,19 +268,4 @@ export class DB implements IDB {
 
     return ret;
   }
-}
-
-export function processMarkdown(content: string, baseUrl: string) {
-  const schema = deepmerge(defaultSchema, {attributes: {'*': ['className']}})
-  return remark()
-   .use(remarkEmoji)
-   .use(remarkGfm)
-   .use(remarkBreaks)
-   .use(remarkAdmonitions)
-   .use(remarkGithub, {
-     repository: baseUrl,
-   })
-   .use(remarkHtml, {sanitize: false})
-   .process(content.replaceAll(/<!--.*?-->/g, '').trim())
-   .then(r => r.toString().trim())
 }
