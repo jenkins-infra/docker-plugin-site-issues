@@ -108,7 +108,7 @@ export function processMarkdown(content: string, baseUrl: string) {
     .use(remarkGithub, {
       repository: baseUrl,
     })
-    .use(remarkHtml, {sanitize: schema})
+    .use(remarkHtml, { sanitize: schema })
     .process(content.replaceAll(/<!--.*?-->/g, '').trim())
     .then(r => r.toString().trim());
 }
