@@ -1,5 +1,6 @@
 [files]
 extend-exclude = [
   "*.json",
-  "*.ts.md"
+  "*.ts.md",
+  "setupAva.ts" # most of the file is a private key
 ]
