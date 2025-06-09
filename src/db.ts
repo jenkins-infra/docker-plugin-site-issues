@@ -100,11 +100,17 @@ export function processMarkdown(content: string, baseUrl: string) {
     schema.attributes['*']?.push('className');
   }
 
+  const admonitionConfig = {
+    classNameMaps: {
+      block: (title: string) => `admonition admonition-${title.toLowerCase()}`,
+      title: (title: string) => `admonition-title admonition-title-${title.toLowerCase()}`,
+    },
+  };
   return remark()
     .use(remarkEmoji)
     .use(remarkGfm)
     .use(remarkBreaks)
-    .use(remarkAdmonitions)
+    .use(remarkAdmonitions, admonitionConfig)
     .use(remarkGithub, {
       repository: baseUrl,
     })
