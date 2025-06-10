@@ -1,7 +1,6 @@
 import test from 'ava';
 import nock from 'nock';
 import request from 'supertest';
-import { getRoutes } from 'get-routes';
 import app from '../app.js';
 import { DB } from '../db.js';
 import * as td from 'testdouble';
@@ -55,9 +54,8 @@ test('app > /api/plugins/:plugin/issues/open > should return 200', async (t) => 
   // TODO: expect(response.header['content-type']).toMatch(/\/json/);
 });
 
-test('app > should have all the routes', (t) => {
-  t.deepEqual(getRoutes(app), {
-    delete: [],
+test('app > should have all the routes', async (t) => {
+  t.deepEqual((await request(app).get('/info/routes')).body, {
     get: [
       '/',
       '/info/healthcheck',
@@ -66,8 +64,5 @@ test('app > should have all the routes', (t) => {
       '/api/plugin/:plugin/issues/open',
       '/api/plugin/:plugin/releases',
     ],
-    patch: [],
-    post: [],
-    put: [],
   });
 });

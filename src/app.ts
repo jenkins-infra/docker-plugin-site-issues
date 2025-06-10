@@ -1,11 +1,9 @@
 import express, { NextFunction, Request, Response } from 'express';
-// import { errorReporter } from 'express-youch';
 import cors from 'cors';
 import helmet from 'helmet';
 import logger from 'morgan';
 import promMid from 'express-prom-bundle';
 import asyncHandler from 'express-async-handler';
-import { getRoutes } from 'get-routes';
 import {
   indexRoute, healthcheckRoute, infoRoute, issuesRoute, releasesRoute,
 } from './routes.js';
@@ -45,13 +43,17 @@ app.use(promMid({
   ],
 }));
 /* anything registered after this will be included in prom middleware */
-
-app.get('/', asyncHandler(indexRoute));
-app.get('/info/healthcheck', asyncHandler(healthcheckRoute));
-app.get('/info/routes', (_, res) => { res.json(getRoutes(app)); });
-app.get('/info', asyncHandler(infoRoute));
-app.get('/api/plugin/:plugin/issues/open', asyncHandler(issuesRoute));
-app.get('/api/plugin/:plugin/releases', asyncHandler(releasesRoute));
+const getRoutes: string[] = [];
+const get = (path: string, route: (req: Request, res: Response) => void) => {
+  app.get(path, asyncHandler(route));
+  getRoutes.push(path);
+};
+get('/', indexRoute);
+get('/info/healthcheck', healthcheckRoute);
+get('/info/routes', (_, res) => { res.json({ 'get': getRoutes }); });
+get('/info', infoRoute);
+get('/api/plugin/:plugin/issues/open', issuesRoute);
+get('/api/plugin/:plugin/releases', releasesRoute);
 
 app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
   err.statusCode = err.statusCode || 500;
