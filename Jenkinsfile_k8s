@@ -1,10 +1,1 @@
-buildDockerAndPublishImage(
-  'plugin-site-issues',
-  [
-    imageName: 'plugin-site-issues', 
-    rebuildImageOnPeriodicJob: false,
-    useContainer: false,
-    automaticSemanticVersioning: true,
-    targetplatforms: 'linux/amd64,linux/arm64'
-  ]
-)
+buildDockerAndPublishImage('plugin-site-issues', [targetplatforms: 'linux/amd64,linux/arm64'])
