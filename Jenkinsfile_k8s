@@ -1,1 +1,4 @@
-buildDockerAndPublishImage('plugin-site-issues', [targetplatforms: 'linux/amd64,linux/arm64'])
+buildDockerAndPublishImage('plugin-site-issues', [
+  publishToPrivateAzureRegistry: true,
+  targetplatforms: 'linux/arm64',
+])
