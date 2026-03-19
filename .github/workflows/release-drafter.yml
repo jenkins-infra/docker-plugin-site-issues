@@ -2,6 +2,8 @@ name: Release Drafter
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
   release:
     types: [released]
 # Only allow 1 release-drafter build at a time to avoid creating multiple "next" releases
@@ -12,6 +14,6 @@ jobs:
     steps:
       - name: Release Drafter
         uses: release-drafter/release-drafter@139054aeaa9adc52ab36ddf67437541f039b88e2 # v7.1.1
-        env:
+        with:
           # This token is generated automatically by default in GitHub Actions: no need to create it manually
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
