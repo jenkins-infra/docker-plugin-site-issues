@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:24.17.0 as builder
+FROM node:24.18.0 as builder
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN npm ci
@@ -8,7 +8,7 @@ RUN npm run build
 # hadolint ignore=DL3059
 RUN npm run test
 
-FROM node:24.17.0
+FROM node:24.18.0
 RUN mkdir /app && chown node:node -R /app
 
 USER node
