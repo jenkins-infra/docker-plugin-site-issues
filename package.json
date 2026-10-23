@@ -96,9 +96,7 @@
     }
   },
   "ava": {
-    "extensions": {
-      "ts": "module"
-    },
+    "extensions": ["ts"],
     "nodeArguments": [
       "--loader=ts-node/esm"
     ],
