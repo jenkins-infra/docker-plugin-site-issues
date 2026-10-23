@@ -29,7 +29,7 @@ pipeline {
     stage('Lint and test') {
       agent {
         docker {
-          image 'node:20.18.0'
+          image 'node:24.22.1'
           reuseNode true
         }
       }
