@@ -61,3 +61,9 @@ export async function releasesRoute(req: Request, res: Response): Promise<void> 
   const reference = pluginInfo.scm.replace(/https?:\/\/github.com\//, '').replace(/\/+$/, '').trim();
   res.json({ releases: await req.db.getGithubReleases(reference) });
 }
+
+/* GET readme URLs listing. */
+export async function readmeUrlsRoute(req: Request, res: Response): Promise<void> {
+  const readmeUrls = await req.db.getPluginReadmeUrls();
+  res.json({ readmeUrls });
+}

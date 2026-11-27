@@ -63,6 +63,7 @@ test('app > should have all the routes', async (t) => {
       '/info',
       '/api/plugin/:plugin/issues/open',
       '/api/plugin/:plugin/releases',
+      '/api/plugins/readme-urls',
     ],
   });
 });
