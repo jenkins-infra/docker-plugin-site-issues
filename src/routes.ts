@@ -64,6 +64,6 @@ export async function releasesRoute(req: Request, res: Response): Promise<void> 
 
 /* GET readme URLs listing. */
 export async function readmeUrlsRoute(req: Request, res: Response): Promise<void> {
-  const readmeUrls = await req.db.getPluginReadmeUrls();
+  const readmeUrls = await req.db.getPluginReadmeUrls(req.get('plugins') || '');
   res.json({ readmeUrls });
 }

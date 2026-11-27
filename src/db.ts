@@ -276,37 +276,35 @@ export class DB implements IDB {
     return ret;
   }
 
-  @Memoize({ tags: ['db'], expiring: README_TIMEOUT })
-  async getPluginReadmeUrls(): Promise<Record<string, string>> {
-    const updateJson = await axios.get('https://updates.jenkins.io/current/update-center.actual.json')
-      .then((response) => response?.data?.plugins || {});
-
+  async getPluginReadmeUrls(repNames: string): Promise<Record<string, string>> {
     const readmeUrls: Record<string, string> = {};
-    const octokit = await this.getRestClient();
 
-    for (const [pluginName, pluginData] of Object.entries(updateJson)) {
-      const plugin = pluginData as PluginInfo;
-      if (!plugin.scm) continue;
-
-      const reference = plugin.scm.replace(/https?:\/\/github.com\//, '').replace(/\/+$/, '').trim();
-      const [owner, repo] = reference.split('/');
-
-      if (owner !== 'jenkinsci') continue;
-
-      try {
-        const readme = await octokit.rest.repos.getReadme({
-          owner,
-          repo,
-        });
-
-        if (readme && readme.data?.html_url) {
-          readmeUrls[pluginName] = readme.data.html_url;
-        }
-      } catch (error) {
-        // Plugin might not have a README, continue to next
-      }
+    const repoNameList = repNames.split(',').map(repo => repo.trim());
+    if (repoNameList.length > 20) {
+      return readmeUrls;
+    }
+    for (const repoName of repoNameList) {
+      readmeUrls[repoName] = await this.getPluginReadmeUrl(repoName);
     }
 
     return readmeUrls;
+  }
+
+  @Memoize({ tags: ['db'], expiring: README_TIMEOUT })
+  async getPluginReadmeUrl(repo: string): Promise<string> {
+    const octokit = await this.getRestClient();
+    try {
+      const readme = await octokit.rest.repos.getReadme({
+        owner: 'jenkinsci',
+        repo: repo,
+      });
+
+      if (readme && readme.data?.html_url) {
+        return readme.data.html_url;
+      }
+    } catch (error) {
+      // Plugin might not have a README, continue to next
+    }
+    return '';
   }
 }
