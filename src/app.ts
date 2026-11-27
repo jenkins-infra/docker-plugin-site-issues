@@ -5,7 +5,7 @@ import logger from 'morgan';
 import promMid from 'express-prom-bundle';
 import asyncHandler from 'express-async-handler';
 import {
-  indexRoute, healthcheckRoute, infoRoute, issuesRoute, releasesRoute,
+  indexRoute, healthcheckRoute, infoRoute, issuesRoute, releasesRoute, readmeUrlsRoute,
 } from './routes.js';
 import { DB } from './db.js';
 
@@ -54,6 +54,7 @@ get('/info/routes', (_, res) => { res.json({ 'get': getRoutes }); });
 get('/info', infoRoute);
 get('/api/plugin/:plugin/issues/open', issuesRoute);
 get('/api/plugin/:plugin/releases', releasesRoute);
+get('/api/plugins/readme-urls', readmeUrlsRoute);
 
 app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
   err.statusCode = err.statusCode || 500;

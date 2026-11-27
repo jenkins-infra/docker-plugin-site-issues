@@ -17,6 +17,7 @@ import { Memoize } from 'typescript-memoize';
 import config from './config.js';
 
 const DEFAULT_TIMEOUT = 60 * 60 * 1000;
+const README_TIMEOUT = 6 * 60 * 60 * 1000;
 
 function quoteStr(str: string) {
   return `"${str.replace('"', '\\"')}"`;
@@ -273,5 +274,39 @@ export class DB implements IDB {
     }
 
     return ret;
+  }
+
+  @Memoize({ tags: ['db'], expiring: README_TIMEOUT })
+  async getPluginReadmeUrls(): Promise<Record<string, string>> {
+    const updateJson = await axios.get('https://updates.jenkins.io/current/update-center.actual.json')
+      .then((response) => response?.data?.plugins || {});
+
+    const readmeUrls: Record<string, string> = {};
+    const octokit = await this.getRestClient();
+
+    for (const [pluginName, pluginData] of Object.entries(updateJson)) {
+      const plugin = pluginData as PluginInfo;
+      if (!plugin.scm) continue;
+
+      const reference = plugin.scm.replace(/https?:\/\/github.com\//, '').replace(/\/+$/, '').trim();
+      const [owner, repo] = reference.split('/');
+
+      if (owner !== 'jenkinsci') continue;
+
+      try {
+        const readme = await octokit.rest.repos.getReadme({
+          owner,
+          repo,
+        });
+
+        if (readme && readme.data?.html_url) {
+          readmeUrls[pluginName] = readme.data.html_url;
+        }
+      } catch (error) {
+        // Plugin might not have a README, continue to next
+      }
+    }
+
+    return readmeUrls;
   }
 }
